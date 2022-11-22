@@ -45,8 +45,7 @@ void domain_descriptor_exporter (py::module_& m) {
     using domain_id_type = typename gridtools::ghex::bindings::python::type_list::domain_id_type;
     using dim_type = typename gridtools::ghex::bindings::python::type_list::dim_type;
     using domain_descriptor_type = gridtools::ghex::structured::regular::domain_descriptor<
-        domain_id_type, dim_type
-    >;
+        domain_id_type, dim_type>;
     auto domain_descriptor_name = gridtools::ghex::bindings::python::utils::demangle<domain_descriptor_type>();
 
     using dim_array_t = std::array<int, dim_type::value>;

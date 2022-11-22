@@ -104,12 +104,12 @@ void field_descriptor_exporter(py::module_& m) {
     using data_type = typename gridtools::ghex::bindings::python::type_list::data_type;
     using dim_type = typename gridtools::ghex::bindings::python::type_list::dim_type;
     using domain_id_type = typename gridtools::ghex::bindings::python::type_list::domain_id_type;
-    using layout_map = typename gridtools::ghex::bindings::python::type_list::layout_map;
+    using layout_map_type = typename gridtools::ghex::bindings::python::type_list::layout_map_type;
 
     using domain_descriptor_type = gridtools::ghex::structured::regular::domain_descriptor<
         domain_id_type, dim_type>;
     using field_descriptor_type = gridtools::ghex::structured::regular::field_descriptor<
-        data_type, architecture_type, domain_descriptor_type, layout_map>;
+        data_type, architecture_type, domain_descriptor_type, layout_map_type>;
     auto field_descriptor_name = gridtools::ghex::bindings::python::utils::demangle<field_descriptor_type>();
     using array_type = std::array<int, dim_type::value>;
 
@@ -134,7 +134,7 @@ void field_descriptor_exporter(py::module_& m) {
         if (info.ndim != 3)
             throw std::runtime_error("Incompatible buffer dimension.");
 
-        return gridtools::ghex::wrap_field<architecture_type, layout_map>(
+        return gridtools::ghex::wrap_field<architecture_type, layout_map_type>(
             dom, static_cast<data_type*>(info.ptr), offsets, extents);
     };
 

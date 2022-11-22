@@ -37,7 +37,7 @@ void communication_object_exporter(py::module_& m) {
     using dim_type = typename gridtools::ghex::bindings::python::type_list::dim_type;
     using domain_id_type = typename gridtools::ghex::bindings::python::type_list::domain_id_type;
     using grid_type = typename gridtools::ghex::bindings::python::type_list::grid_type;
-    using layout_map = typename gridtools::ghex::bindings::python::type_list::layout_map;
+    using layout_map_type = typename gridtools::ghex::bindings::python::type_list::layout_map_type;
     using transport_type = typename gridtools::ghex::bindings::python::type_list::transport_type;
 
     using domain_descriptor_type = gridtools::ghex::structured::regular::domain_descriptor<
@@ -57,7 +57,7 @@ void communication_object_exporter(py::module_& m) {
         )
     );
     using field_descriptor_type = gridtools::ghex::structured::regular::field_descriptor<
-        data_type, architecture_type, domain_descriptor_type, layout_map>;
+        data_type, architecture_type, domain_descriptor_type, layout_map_type>;
     using buffer_info_type = gridtools::ghex::buffer_info<
         typename pattern_container_type::value_type, architecture_type, field_descriptor_type>;
 

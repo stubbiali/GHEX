@@ -32,7 +32,7 @@ struct type_list {
     using data_type = double;
     using grid_type = gridtools::ghex::structured::grid;
     using dim_type = std::integral_constant<int, 3>;
-    using layout_map = gridtools::layout_map<0, 1, 2>;
+    using layout_map_type = gridtools::layout_map<0, 1, 2>;
 
     template <typename DomainDescriptor>
     using domain_range_type = std::vector<DomainDescriptor>;
