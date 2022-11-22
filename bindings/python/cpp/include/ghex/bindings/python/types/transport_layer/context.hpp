@@ -41,6 +41,9 @@ void context_exporter(py::module_& m) {
     auto context_name = gridtools::ghex::bindings::python::utils::demangle<context_type>();
 
     auto context_cls = py::class_<context_type>(m, context_name.c_str())
+        .def_property_readonly_static("__cpp_type__", [context_name] (const pybind11::object&) {
+            return context_name;
+        })
         .def("rank", &context_type::rank)
         .def("size", &context_type::size)
         .def("get_communicator", &context_type::get_communicator);

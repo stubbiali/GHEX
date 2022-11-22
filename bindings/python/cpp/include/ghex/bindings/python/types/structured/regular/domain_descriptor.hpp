@@ -52,6 +52,9 @@ void domain_descriptor_exporter (py::module_& m) {
     using dim_array_t = std::array<int, dim_type::value>;
 
     py::class_<domain_descriptor_type>(m, domain_descriptor_name.c_str())
+        .def_property_readonly_static("__cpp_type__", [domain_descriptor_name] (const pybind11::object&) {
+            return domain_descriptor_name;
+        })
         .def(py::init<domain_id_type, dim_array_t, dim_array_t>())
         .def("domain_id", &domain_descriptor_type::domain_id)
         .def("first", [] (const domain_descriptor_type& domain_desc) { return as_tuple(domain_desc.first()); })

@@ -39,7 +39,10 @@ void coordinate_exporter (py::module_& m) {
     >;
     auto coordinate_name = gridtools::ghex::bindings::python::utils::demangle<coordinate_type>();
 
-    py::class_<coordinate_type>(m, coordinate_name.c_str());
+    py::class_<coordinate_type>(m, coordinate_name.c_str())
+        .def_property_readonly_static("__cpp_type__", [coordinate_name] (const pybind11::object&) {
+            return coordinate_name;
+        });
 }
 
 }

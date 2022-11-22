@@ -66,6 +66,9 @@ void communication_object_exporter(py::module_& m) {
     auto communication_object_name = gridtools::ghex::bindings::python::utils::demangle<communication_object_type>();
 
     py::class_<communication_object_type>(m, communication_object_name.c_str())
+        .def_property_readonly_static("__cpp_type__", [communication_object_name] (const pybind11::object&) {
+            return communication_object_name;
+        })
         .def(py::init<communicator_type>())
         .def("exchange", [] (communication_object_type& co,
                              buffer_info_type& b) {
@@ -87,6 +90,9 @@ void communication_object_exporter(py::module_& m) {
     auto communication_handle_name = gridtools::ghex::bindings::python::utils::demangle<communication_handle_type>();
 
     py::class_<communication_handle_type>(m, communication_handle_name.c_str())
+        .def_property_readonly_static("__cpp_type__", [communication_handle_name] (const pybind11::object&) {
+            return communication_handle_name;
+        })
         .def("wait", &communication_handle_type::wait);
 }
 

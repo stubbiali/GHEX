@@ -48,6 +48,9 @@ void halo_generator_exporter(py::module_& m) {
 
     // halo_generator
     py::class_<halo_generator_type>(m, halo_generator_name.c_str())
+        .def_property_readonly_static("__cpp_type__", [halo_generator_name] (const pybind11::object&) {
+            return halo_generator_name;
+        })
         .def(py::init<dim_array_t, dim_array_t, halo_array_t, periodic_array_t>())
         .def("__call__", &halo_generator_type::operator()); // todo
 

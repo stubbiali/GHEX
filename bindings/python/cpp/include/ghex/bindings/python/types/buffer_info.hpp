@@ -58,7 +58,10 @@ void buffer_info_exporter(py::module_& m) {
         typename pattern_container_type::value_type, architecture_type, field_descriptor_type>;
     auto buffer_info_name = gridtools::ghex::bindings::python::utils::demangle<buffer_info_type>();
 
-    py::class_<buffer_info_type>(m, buffer_info_name.c_str());
+    py::class_<buffer_info_type>(m, buffer_info_name.c_str())
+        .def_property_readonly_static("__cpp_type__", [buffer_info_name] (const pybind11::object&) {
+            return buffer_info_name;
+        });
 }
 
 }

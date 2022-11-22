@@ -32,7 +32,10 @@ void communicator_exporter (py::module_& m) {
     using communicator_type = typename gridtools::ghex::bindings::python::type_list::communicator_type;
     auto communicator_name = gridtools::ghex::bindings::python::utils::demangle<communicator_type>();
 
-    py::class_<communicator_type>(m, communicator_name.c_str());
+    py::class_<communicator_type>(m, communicator_name.c_str())
+        .def_property_readonly_static("__cpp_type__", [communicator_name] (const pybind11::object&) {
+            return communicator_name;
+        });
 }
 
 }

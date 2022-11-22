@@ -139,6 +139,9 @@ void field_descriptor_exporter(py::module_& m) {
     };
 
     py::class_<field_descriptor_type>(m, field_descriptor_name.c_str())
+        .def_property_readonly_static("__cpp_type__", [field_descriptor_name] (const pybind11::object&) {
+            return field_descriptor_name;
+        })
         .def(py::init(wrapper));
 }
 

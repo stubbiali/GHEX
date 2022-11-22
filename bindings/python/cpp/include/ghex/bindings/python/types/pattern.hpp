@@ -50,6 +50,9 @@ void pattern_container_exporter(py::module_& m) {
     auto pattern_container_name = gridtools::ghex::bindings::python::utils::demangle<pattern_container_type>();
 
     py::class_<pattern_container_type>(m, pattern_container_name.c_str())
+        .def_property_readonly_static("__cpp_type__", [pattern_container_name] (const pybind11::object&) {
+            return pattern_container_name;
+        })
         .def_property_readonly_static("domain_id_type", [] (const pybind11::object&) {
             return gridtools::ghex::bindings::python::utils::demangle<typename pattern_container_type::domain_id_type>();
         })
