@@ -137,7 +137,7 @@ void field_descriptor_exporter(py::module_& m) {
             throw std::runtime_error("Incompatible buffer dimension.");
 
         return gridtools::ghex::wrap_field<architecture_type, layout_map_type>(
-            dom, static_cast<data_type*>(info.ptr), offsets, extents);
+            dom, static_cast<data_type*>(info.ptr), offsets, extents, info.strides);
     };
 
     py::class_<field_descriptor_type>(m, field_descriptor_name.c_str())
