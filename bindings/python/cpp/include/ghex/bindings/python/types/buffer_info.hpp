@@ -11,10 +11,21 @@
 #ifndef INCLUDED_GHEX_PYBIND_BUFFER_INFO_HPP
 #define INCLUDED_GHEX_PYBIND_BUFFER_INFO_HPP
 
-#include <gridtools/meta.hpp>
-#include <ghex/bindings/python/type_list.hpp>
-#include <ghex/bindings/python/types/pattern.hpp>
-#include <ghex/buffer_info.hpp>
+#include <sstream>
+
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+#include "ghex/buffer_info.hpp"
+#include "ghex/structured/pattern.hpp"
+#include "ghex/structured/regular/domain_descriptor.hpp"
+#include "ghex/structured/regular/field_descriptor.hpp"
+#include "ghex/structured/regular/halo_generator.hpp"
+
+#include "ghex/bindings/python/type_list.hpp"
+#include "ghex/bindings/python/utils/demangle.hpp"
+
+namespace py = pybind11;
 
 namespace gridtools {
 namespace ghex {
@@ -22,21 +33,33 @@ namespace bindings {
 namespace python {
 namespace types {
 
-namespace detail {
-    template <typename pattern_container_type, typename field_descriptor_type>
+void buffer_info_exporter(py::module_& m) {
+    using architecture_type = typename gridtools::ghex::bindings::python::type_list::architecture_type;
+    using data_type = typename gridtools::ghex::bindings::python::type_list::data_type;
+    using dim_type = typename gridtools::ghex::bindings::python::type_list::dim_type;
+    using domain_id_type = typename gridtools::ghex::bindings::python::type_list::domain_id_type;
+    using layout_map = typename gridtools::ghex::bindings::python::type_list::layout_map;
+
+    using domain_descriptor_type = gridtools::ghex::structured::regular::domain_descriptor<
+        domain_id_type, dim_type>;
+    using domain_range_type = typename gridtools::ghex::bindings::python::type_list::domain_range_type<domain_descriptor_type>;
+    using halo_generator_type = gridtools::ghex::structured::regular::halo_generator<domain_id_type, dim_type>;
+    using pattern_container_type = decltype(gridtools::ghex::make_pattern<
+        gridtools::ghex::bindings::python::type_list::grid_type>(
+            std::declval<typename gridtools::ghex::bindings::python::type_list::context_type&>(),
+            std::declval<halo_generator_type&>(),
+            std::declval<domain_range_type&>()
+        )
+    );
+    using field_descriptor_type = gridtools::ghex::structured::regular::field_descriptor<
+        data_type, architecture_type, domain_descriptor_type, layout_map>;
+
     using buffer_info_type = gridtools::ghex::buffer_info<
-        typename pattern_container_type::value_type,
-        typename field_descriptor_type::arch_type,
-        field_descriptor_type>;
+        typename pattern_container_type::value_type, architecture_type, field_descriptor_type>;
+    auto buffer_info_name = gridtools::ghex::bindings::python::utils::demangle<buffer_info_type>();
+
+    py::class_<buffer_info_type>(m, buffer_info_name.c_str());
 }
-
-template <typename pattern_container_type>
-using buffer_info_specializations_per_pattern_container = gridtools::meta::transform<
-    gridtools::meta::bind<detail::buffer_info_type, pattern_container_type, gridtools::meta::_1>::template apply,
-    typename pattern_container_trait<pattern_container_type>::field_descriptor_types>;
-
-using buffer_info_specializations = gridtools::meta::rename<gridtools::meta::concat, gridtools::meta::transform<
-    buffer_info_specializations_per_pattern_container, pattern_container_specializations>>;
 
 }
 }

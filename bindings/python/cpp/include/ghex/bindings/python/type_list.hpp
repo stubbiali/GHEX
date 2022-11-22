@@ -10,12 +10,10 @@
  */
 #pragma once
 
+#include "gridtools/common/layout_map.hpp"
+
 #include "ghex/arch_list.hpp"
-#include "ghex/communication_object_2.hpp"
-#include "ghex/structured/pattern.hpp"
-#include "ghex/structured/regular/domain_descriptor.hpp"
-#include "ghex/structured/regular/field_descriptor.hpp"
-#include "ghex/structured/regular/halo_generator.hpp"
+#include "ghex/structured/grid.hpp"
 #include "ghex/transport_layer/context.hpp"
 #include "ghex/transport_layer/mpi/context.hpp"
 
@@ -33,17 +31,15 @@ struct type_list {
     using domain_id_type = int;
     using data_type = double;
     using grid_type = gridtools::ghex::structured::grid;
-    using dim = std::integral_constant<int, 3>;
+    using dim_type = std::integral_constant<int, 3>;
     using layout_map = gridtools::layout_map<0, 1, 2>;
 
     template <typename DomainDescriptor>
     using domain_range_type = std::vector<DomainDescriptor>;
 
     using transport_type = gridtools::ghex::tl::mpi_tag;
-    using context_type = typename gridtools::ghex::tl::context_factory<transport>::context_type;
+    using context_type = typename gridtools::ghex::tl::context_factory<transport_type>::context_type;
     using communicator_type = typename context_type::communicator_type;
-
-    using halo_generator_type = gridtools::ghex::structured::regular::halo_generator<int,std::integral_constant<int, 3>>;
 };
 
 }

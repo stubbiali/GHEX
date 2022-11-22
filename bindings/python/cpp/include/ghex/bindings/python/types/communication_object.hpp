@@ -11,13 +11,19 @@
 #ifndef INCLUDED_GHEX_PYBIND_COMMUNICATION_OBJECT_HPP
 #define INCLUDED_GHEX_PYBIND_COMMUNICATION_OBJECT_HPP
 
-#include <gridtools/meta.hpp>
-#include <ghex/pattern.hpp>
-#include <ghex/buffer_info.hpp>
-#include <ghex/communication_object_2.hpp>
-#include <ghex/bindings/python/type_list.hpp>
-#include <ghex/bindings/python/types/pattern.hpp>
-#include <ghex/bindings/python/types/buffer_info.hpp>
+#include <sstream>
+
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+#include "ghex/buffer_info.hpp"
+#include "ghex/communication_object_2.hpp"
+#include "ghex/pattern.hpp"
+
+#include "ghex/bindings/python/type_list.hpp"
+#include "ghex/bindings/python/utils/demangle.hpp"
+
+namespace py = pybind11;
 
 namespace gridtools {
 namespace ghex {
@@ -25,70 +31,65 @@ namespace bindings {
 namespace python {
 namespace types {
 
-namespace detail {
-    using communication_object_args = gridtools::meta::cartesian_product<
-                        gridtools::meta::list<gridtools::ghex::bindings::python::type_list::transport>,
-                        gridtools::ghex::bindings::python::type_list::grid_types,
-                        gridtools::ghex::bindings::python::type_list::domain_id_types,
-                        gridtools::ghex::bindings::python::type_list::dims>;
+void communication_object_exporter(py::module_& m) {
+    using architecture_type = typename gridtools::ghex::bindings::python::type_list::architecture_type;
+    using data_type = typename gridtools::ghex::bindings::python::type_list::data_type;
+    using dim_type = typename gridtools::ghex::bindings::python::type_list::dim_type;
+    using domain_id_type = typename gridtools::ghex::bindings::python::type_list::domain_id_type;
+    using grid_type = typename gridtools::ghex::bindings::python::type_list::grid_type;
+    using layout_map = typename gridtools::ghex::bindings::python::type_list::layout_map;
+    using transport_type = typename gridtools::ghex::bindings::python::type_list::transport_type;
 
-    template <typename GridType>
-    struct DomainDescriptorDeductor {};
+    using domain_descriptor_type = gridtools::ghex::structured::regular::domain_descriptor<
+        domain_id_type, dim_type>;
+    using context_type = typename gridtools::ghex::tl::context_factory<transport_type>::context_type;
+    using communicator_type = typename context_type::communicator_type;
+    using grid_impl_type = typename grid_type::template type<domain_descriptor_type>;
 
-    template <>
-    struct DomainDescriptorDeductor<gridtools::ghex::structured::grid> {
-        template <typename DomainIdType, typename Dim>
-        using type = gridtools::ghex::structured::regular::domain_descriptor<DomainIdType, Dim>;
-    };
+    // TODO: could be multiple in the future when the halo generator is parameterized
+    using domain_range_type = typename gridtools::ghex::bindings::python::type_list::domain_range_type<domain_descriptor_type>;
+    using halo_generator_type = gridtools::ghex::structured::regular::halo_generator<domain_id_type, dim_type>;
+    using pattern_container_type = decltype(gridtools::ghex::make_pattern<
+        gridtools::ghex::bindings::python::type_list::grid_type>(
+            std::declval<typename gridtools::ghex::bindings::python::type_list::context_type&>(),
+            std::declval<halo_generator_type&>(),
+            std::declval<domain_range_type&>()
+        )
+    );
+    using field_descriptor_type = gridtools::ghex::structured::regular::field_descriptor<
+        data_type, architecture_type, domain_descriptor_type, layout_map>;
+    using buffer_info_type = gridtools::ghex::buffer_info<
+        typename pattern_container_type::value_type, architecture_type, field_descriptor_type>;
 
-    template <typename GridType, typename DomainIdType, typename Dim>
-    using domain_descriptor_type = typename DomainDescriptorDeductor<GridType>::template type<DomainIdType, Dim>;
+    using communication_object_type = gridtools::ghex::communication_object<
+        communicator_type, grid_impl_type, domain_id_type>;
+    auto communication_object_name = gridtools::ghex::bindings::python::utils::demangle<communication_object_type>();
 
-    template <typename Transport, typename GridType, typename DomainIdType, typename Dim>
-    struct CommunicationObjectTypeDeductor {
-        using transport = Transport;
-        using grid_type = GridType;
-        using domain_id_type = DomainIdType;
-        using dim = Dim;
+    py::class_<communication_object_type>(m, communication_object_name.c_str())
+        .def(py::init<communicator_type>())
+        .def("exchange", [] (communication_object_type& co,
+                             buffer_info_type& b) {
+            return co.exchange(b);
+        })
+        .def("exchange", [] (communication_object_type& co,
+                             buffer_info_type& b1,
+                             buffer_info_type& b2) {
+            return co.exchange(b1, b2);
+        })
+        .def("exchange", [] (communication_object_type& co,
+                             buffer_info_type& b1,
+                             buffer_info_type& b2,
+                             buffer_info_type& b3) {
+            return co.exchange(b1, b2, b3);
+        });
 
-        using context_type = typename gridtools::ghex::tl::context_factory<transport>::context_type;
-        using communicator_type = typename context_type::communicator_type;
-        using grid_impl_type = typename GridType::template type<domain_descriptor_type<GridType, DomainIdType, Dim>>;
+    using communication_handle_type = typename communication_object_type::handle_type;
+    auto communication_handle_name = gridtools::ghex::bindings::python::utils::demangle<communication_handle_type>();
 
-        // TODO: could be multiple in the future when the halo generator is parameterized
-        using pattern_container_type = typename gridtools::ghex::bindings::python::types::pattern_container_type<
-            grid_type, transport, domain_id_type, dim>;
-
-        using buffer_info_types = typename gridtools::ghex::bindings::python::types::buffer_info_specializations_per_pattern_container<pattern_container_type>;
-
-        using communication_object_type = gridtools::ghex::communication_object<
-            communicator_type, grid_impl_type, domain_id_type>;
-
-        using communication_handle_type = typename communication_object_type::handle_type;
-    };
-
-    template <typename Transport, typename GridType, typename DomainIdType, typename Dim>
-    using communication_object_type = typename CommunicationObjectTypeDeductor<
-        Transport, GridType, DomainIdType, Dim>::communication_object_type;
-
-    template <typename Transport, typename GridType, typename DomainIdType, typename Dim>
-    using communication_handle_type = typename CommunicationObjectTypeDeductor<
-        Transport, GridType, DomainIdType, Dim>::communication_handle_type;
+    py::class_<communication_handle_type>(m, communication_handle_name.c_str())
+        .def("wait", &communication_handle_type::wait);
 }
 
-using communication_object_specializations = gridtools::meta::transform<
-    gridtools::meta::rename<detail::communication_object_type>::template apply,
-    detail::communication_object_args>;
-
-template <typename CommunicationObject>
-using communication_object_trait = gridtools::meta::rename<
-    detail::CommunicationObjectTypeDeductor,
-    gridtools::meta::at<detail::communication_object_args,
-    typename gridtools::meta::find<communication_object_specializations, CommunicationObject>::type>>;
-
-using communication_handle_specializations = gridtools::meta::dedup<gridtools::meta::transform<
-    gridtools::meta::rename<detail::communication_handle_type>::template apply,
-    detail::communication_object_args>>;
 
 }
 }

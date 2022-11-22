@@ -8,12 +8,20 @@
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
-#ifndef INCLUDED_GHEX_PYBIND_DOMAIN_DESCRIPTOR_HPP
-#define INCLUDED_GHEX_PYBIND_DOMAIN_DESCRIPTOR_HPP
+#ifndef INCLUDED_GHEX_PYBIND_COORDINATE_HPP
+#define INCLUDED_GHEX_PYBIND_COORDINATE_HPP
 
-#include <gridtools/meta.hpp>
-#include <ghex/common/coordinate.hpp>
-#include <ghex/bindings/python/type_list.hpp>
+#include <sstream>
+
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+#include "ghex/common/coordinate.hpp"
+
+#include "ghex/bindings/python/type_list.hpp"
+#include "ghex/bindings/python/utils/demangle.hpp"
+
+namespace py = pybind11;
 
 namespace gridtools {
 namespace ghex {
@@ -22,18 +30,17 @@ namespace python {
 namespace types {
 namespace common {
 
-namespace detail {
-    using coordinate_args = gridtools::meta::cartesian_product<
-                            gridtools::ghex::bindings::python::type_list::domain_id_types,
-                            gridtools::ghex::bindings::python::type_list::dims>;
+void coordinate_exporter (py::module_& m) {
+    using coordinate_type = gridtools::ghex::coordinate<
+        std::array<
+            typename gridtools::ghex::bindings::python::type_list::domain_id_type,
+            gridtools::ghex::bindings::python::type_list::dim_type::value
+        >
+    >;
+    auto coordinate_name = gridtools::ghex::bindings::python::utils::demangle<coordinate_type>();
 
-    template <typename T, typename Dim>
-    using coordinate_type = gridtools::ghex::coordinate<std::array<T, Dim::value>>;
-
+    py::class_<coordinate_type>(m, coordinate_name.c_str());
 }
-
-using coordinate_specializations = gridtools::meta::transform<gridtools::meta::rename<
-        detail::coordinate_type>::template apply, detail::coordinate_args>;
 
 }
 }

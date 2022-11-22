@@ -11,11 +11,19 @@
 #ifndef INCLUDED_GHEX_PYBIND_PATTERN_HPP
 #define INCLUDED_GHEX_PYBIND_PATTERN_HPP
 
-#include <gridtools/meta.hpp>
-#include <ghex/pattern.hpp>
-#include <ghex/structured/pattern.hpp>
-#include <ghex/unstructured/pattern.hpp>
-#include <ghex/bindings/python/type_list.hpp>
+#include <sstream>
+
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+#include "ghex/structured/pattern.hpp"
+#include "ghex/structured/regular/domain_descriptor.hpp"
+#include "ghex/structured/regular/halo_generator.hpp"
+
+#include "ghex/bindings/python/type_list.hpp"
+#include "ghex/bindings/python/utils/demangle.hpp"
+
+namespace py = pybind11;
 
 namespace gridtools {
 namespace ghex {
@@ -23,54 +31,37 @@ namespace bindings {
 namespace python {
 namespace types {
 
-namespace detail {
-    using pattern_container_args = gridtools::meta::cartesian_product<
-                        gridtools::ghex::bindings::python::type_list::grid_types,
-                        gridtools::meta::list<gridtools::ghex::bindings::python::type_list::transport>,
-                        gridtools::ghex::bindings::python::type_list::domain_id_types,
-                        gridtools::ghex::bindings::python::type_list::dims>;
+void pattern_container_exporter(py::module_& m) {
+    using context_type = typename gridtools::ghex::bindings::python::type_list::context_type;
+    using dim_type = typename gridtools::ghex::bindings::python::type_list::dim_type;
+    using domain_id_type = typename gridtools::ghex::bindings::python::type_list::domain_id_type;
 
-    template <typename GridType, typename Transport, typename DomainIdType, typename Dim>
-    struct PatternContainerTypeDeductor {};
-
-    template <typename Transport, typename DomainIdType, typename Dim>
-    struct PatternContainerTypeDeductor<gridtools::ghex::structured::grid, Transport, DomainIdType, Dim> {
-        using grid_type = gridtools::ghex::structured::grid;
-
-        using context_type = typename gridtools::ghex::tl::context_factory<Transport>::context_type;
-        // TODO: paramterize
-        using halo_generator_type = gridtools::ghex::structured::regular::halo_generator<DomainIdType, Dim>;
-        using domain_descriptor_type = gridtools::ghex::structured::regular::domain_descriptor<DomainIdType, Dim>;
-        using domain_range_type = std::vector<domain_descriptor_type>;
-
-        using field_type_args = gridtools::meta::cartesian_product<
-                        gridtools::ghex::bindings::python::type_list::data_types,
-                        gridtools::ghex::bindings::python::type_list::architecture_types,
-                        gridtools::meta::list<domain_descriptor_type>,
-                        gridtools::ghex::bindings::python::type_list::layout_maps>;
-
-        using field_descriptor_types = gridtools::meta::transform<
-            gridtools::meta::rename<gridtools::ghex::structured::regular::field_descriptor>::template apply,
-            field_type_args>;
-
-        using pattern_container_type = decltype(gridtools::ghex::make_pattern<grid_type>(
-            std::declval<context_type&>(),
+    using domain_descriptor_type = gridtools::ghex::structured::regular::domain_descriptor<
+        domain_id_type, dim_type>;
+    using domain_range_type = typename gridtools::ghex::bindings::python::type_list::domain_range_type<domain_descriptor_type>;
+    using halo_generator_type = gridtools::ghex::structured::regular::halo_generator<domain_id_type, dim_type>;
+    using pattern_container_type = decltype(gridtools::ghex::make_pattern<
+        gridtools::ghex::bindings::python::type_list::grid_type>(
+            std::declval<typename gridtools::ghex::bindings::python::type_list::context_type&>(),
             std::declval<halo_generator_type&>(),
-            std::declval<typename gridtools::ghex::bindings::python::type_list::domain_range_type<domain_descriptor_type>&>()));
+            std::declval<domain_range_type&>()
+        )
+    );
+    auto pattern_container_name = gridtools::ghex::bindings::python::utils::demangle<pattern_container_type>();
+
+    py::class_<pattern_container_type>(m, pattern_container_name.c_str())
+        .def_property_readonly_static("domain_id_type", [] (const pybind11::object&) {
+            return gridtools::ghex::bindings::python::utils::demangle<typename pattern_container_type::domain_id_type>();
+        })
+        .def_property_readonly_static("grid_type", [] (const pybind11::object&) {
+            return gridtools::ghex::bindings::python::utils::demangle<typename pattern_container_type::grid_type>();
+        });
+
+    auto make_pattern_wrapper = [] (context_type& context, halo_generator_type& hgen, domain_range_type& d_range) {
+        return gridtools::ghex::make_pattern<gridtools::ghex::bindings::python::type_list::grid_type>(context, hgen, d_range);
     };
+    m.def("make_pattern", make_pattern_wrapper);
 }
-
-template <typename GridType, typename Transport, typename DomainIdType, typename Dim>
-using pattern_container_type = typename detail::PatternContainerTypeDeductor<
-    GridType, Transport, DomainIdType, Dim>::pattern_container_type;
-
-using pattern_container_specializations = gridtools::meta::transform<
-    gridtools::meta::rename<pattern_container_type>::template apply, detail::pattern_container_args>;
-
-template <typename PatternContainer>
-using pattern_container_trait = gridtools::meta::rename<
-    detail::PatternContainerTypeDeductor,
-    gridtools::meta::at<detail::pattern_container_args, typename gridtools::meta::find<pattern_container_specializations, PatternContainer>::type>>;
 
 }
 }
