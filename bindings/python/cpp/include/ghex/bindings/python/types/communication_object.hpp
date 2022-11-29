@@ -199,7 +199,137 @@ void communication_object_exporter(py::module_& m) {
                              buffer_info_type& b12,
                              buffer_info_type& b13) {
             return co.exchange(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13);
-        });
+        })
+        .def("bexchange_async", [] (communication_object_type& co,
+                                    buffer_info_type& b) {
+            return co.bexchange(b);
+        }, py::call_guard<py::gil_scoped_release>())
+        .def("bexchange_async", [] (communication_object_type& co,
+                                    buffer_info_type& b1,
+                                    buffer_info_type& b2) {
+            return co.bexchange(b1, b2);
+        }, py::call_guard<py::gil_scoped_release>())
+        .def("bexchange_async", [] (communication_object_type& co,
+                                    buffer_info_type& b1,
+                                    buffer_info_type& b2,
+                                    buffer_info_type& b3) {
+            return co.bexchange(b1, b2, b3);
+        }, py::call_guard<py::gil_scoped_release>())
+        .def("bexchange_async", [] (communication_object_type& co,
+                                    buffer_info_type& b1,
+                                    buffer_info_type& b2,
+                                    buffer_info_type& b3,
+                                    buffer_info_type& b4) {
+            return co.bexchange(b1, b2, b3, b4);
+        }, py::call_guard<py::gil_scoped_release>())
+        .def("bexchange_async", [] (communication_object_type& co,
+                                    buffer_info_type& b1,
+                                    buffer_info_type& b2,
+                                    buffer_info_type& b3,
+                                    buffer_info_type& b4,
+                                    buffer_info_type& b5) {
+            return co.bexchange(b1, b2, b3, b4, b5);
+        }, py::call_guard<py::gil_scoped_release>())
+        .def("bexchange_async", [] (communication_object_type& co,
+                                    buffer_info_type& b1,
+                                    buffer_info_type& b2,
+                                    buffer_info_type& b3,
+                                    buffer_info_type& b4,
+                                    buffer_info_type& b5,
+                                    buffer_info_type& b6) {
+            return co.bexchange(b1, b2, b3, b4, b5, b6);
+        }, py::call_guard<py::gil_scoped_release>())
+        .def("bexchange_async", [] (communication_object_type& co,
+                                    buffer_info_type& b1,
+                                    buffer_info_type& b2,
+                                    buffer_info_type& b3,
+                                    buffer_info_type& b4,
+                                    buffer_info_type& b5,
+                                    buffer_info_type& b6,
+                                    buffer_info_type& b7) {
+            return co.bexchange(b1, b2, b3, b4, b5, b6, b7);
+        }, py::call_guard<py::gil_scoped_release>())
+        .def("bexchange_async", [] (communication_object_type& co,
+                                    buffer_info_type& b1,
+                                    buffer_info_type& b2,
+                                    buffer_info_type& b3,
+                                    buffer_info_type& b4,
+                                    buffer_info_type& b5,
+                                    buffer_info_type& b6,
+                                    buffer_info_type& b7,
+                                    buffer_info_type& b8) {
+            return co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8);
+        }, py::call_guard<py::gil_scoped_release>())
+        .def("bexchange_async", [] (communication_object_type& co,
+                                    buffer_info_type& b1,
+                                    buffer_info_type& b2,
+                                    buffer_info_type& b3,
+                                    buffer_info_type& b4,
+                                    buffer_info_type& b5,
+                                    buffer_info_type& b6,
+                                    buffer_info_type& b7,
+                                    buffer_info_type& b8,
+                                    buffer_info_type& b9) {
+            return co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9);
+        }, py::call_guard<py::gil_scoped_release>())
+        .def("bexchange_async", [] (communication_object_type& co,
+                                    buffer_info_type& b1,
+                                    buffer_info_type& b2,
+                                    buffer_info_type& b3,
+                                    buffer_info_type& b4,
+                                    buffer_info_type& b5,
+                                    buffer_info_type& b6,
+                                    buffer_info_type& b7,
+                                    buffer_info_type& b8,
+                                    buffer_info_type& b9,
+                                    buffer_info_type& b10) {
+            return co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10);
+        }, py::call_guard<py::gil_scoped_release>())
+        .def("bexchange_async", [] (communication_object_type& co,
+                                    buffer_info_type& b1,
+                                    buffer_info_type& b2,
+                                    buffer_info_type& b3,
+                                    buffer_info_type& b4,
+                                    buffer_info_type& b5,
+                                    buffer_info_type& b6,
+                                    buffer_info_type& b7,
+                                    buffer_info_type& b8,
+                                    buffer_info_type& b9,
+                                    buffer_info_type& b10,
+                                    buffer_info_type& b11) {
+            return co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11);
+        }, py::call_guard<py::gil_scoped_release>())
+        .def("bexchange_async", [] (communication_object_type& co,
+                                    buffer_info_type& b1,
+                                    buffer_info_type& b2,
+                                    buffer_info_type& b3,
+                                    buffer_info_type& b4,
+                                    buffer_info_type& b5,
+                                    buffer_info_type& b6,
+                                    buffer_info_type& b7,
+                                    buffer_info_type& b8,
+                                    buffer_info_type& b9,
+                                    buffer_info_type& b10,
+                                    buffer_info_type& b11,
+                                    buffer_info_type& b12) {
+            return co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12);
+        }, py::call_guard<py::gil_scoped_release>())
+        .def("bexchange_async", [] (communication_object_type& co,
+                                    buffer_info_type& b1,
+                                    buffer_info_type& b2,
+                                    buffer_info_type& b3,
+                                    buffer_info_type& b4,
+                                    buffer_info_type& b5,
+                                    buffer_info_type& b6,
+                                    buffer_info_type& b7,
+                                    buffer_info_type& b8,
+                                    buffer_info_type& b9,
+                                    buffer_info_type& b10,
+                                    buffer_info_type& b11,
+                                    buffer_info_type& b12,
+                                    buffer_info_type& b13) {
+            return co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13);
+        }, py::call_guard<py::gil_scoped_release>());
 
     using communication_handle_type = typename communication_object_type::handle_type;
     auto communication_handle_name = gridtools::ghex::bindings::python::utils::demangle<communication_handle_type>();
