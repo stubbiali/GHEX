@@ -200,27 +200,157 @@ void communication_object_exporter(py::module_& m) {
                              buffer_info_type& b13) {
             return co.exchange(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13);
         })
+        .def("bexchange", [] (communication_object_type& co,
+                              buffer_info_type& b) {
+            co.bexchange(b);
+        })
+        .def("bexchange", [] (communication_object_type& co,
+                              buffer_info_type& b1,
+                              buffer_info_type& b2) {
+            co.bexchange(b1, b2);
+        })
+        .def("bexchange", [] (communication_object_type& co,
+                              buffer_info_type& b1,
+                              buffer_info_type& b2,
+                              buffer_info_type& b3) {
+            co.bexchange(b1, b2, b3);
+        })
+        .def("bexchange", [] (communication_object_type& co,
+                              buffer_info_type& b1,
+                              buffer_info_type& b2,
+                              buffer_info_type& b3,
+                              buffer_info_type& b4) {
+            co.bexchange(b1, b2, b3, b4);
+        })
+        .def("bexchange", [] (communication_object_type& co,
+                              buffer_info_type& b1,
+                              buffer_info_type& b2,
+                              buffer_info_type& b3,
+                              buffer_info_type& b4,
+                              buffer_info_type& b5) {
+            co.bexchange(b1, b2, b3, b4, b5);
+        })
+        .def("bexchange", [] (communication_object_type& co,
+                              buffer_info_type& b1,
+                              buffer_info_type& b2,
+                              buffer_info_type& b3,
+                              buffer_info_type& b4,
+                              buffer_info_type& b5,
+                              buffer_info_type& b6) {
+            co.bexchange(b1, b2, b3, b4, b5, b6);
+        })
+        .def("bexchange", [] (communication_object_type& co,
+                              buffer_info_type& b1,
+                              buffer_info_type& b2,
+                              buffer_info_type& b3,
+                              buffer_info_type& b4,
+                              buffer_info_type& b5,
+                              buffer_info_type& b6,
+                              buffer_info_type& b7) {
+            co.bexchange(b1, b2, b3, b4, b5, b6, b7);
+        })
+        .def("bexchange", [] (communication_object_type& co,
+                              buffer_info_type& b1,
+                              buffer_info_type& b2,
+                              buffer_info_type& b3,
+                              buffer_info_type& b4,
+                              buffer_info_type& b5,
+                              buffer_info_type& b6,
+                              buffer_info_type& b7,
+                              buffer_info_type& b8) {
+            co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8);
+        })
+        .def("bexchange", [] (communication_object_type& co,
+                              buffer_info_type& b1,
+                              buffer_info_type& b2,
+                              buffer_info_type& b3,
+                              buffer_info_type& b4,
+                              buffer_info_type& b5,
+                              buffer_info_type& b6,
+                              buffer_info_type& b7,
+                              buffer_info_type& b8,
+                              buffer_info_type& b9) {
+            co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9);
+        })
+        .def("bexchange", [] (communication_object_type& co,
+                              buffer_info_type& b1,
+                              buffer_info_type& b2,
+                              buffer_info_type& b3,
+                              buffer_info_type& b4,
+                              buffer_info_type& b5,
+                              buffer_info_type& b6,
+                              buffer_info_type& b7,
+                              buffer_info_type& b8,
+                              buffer_info_type& b9,
+                              buffer_info_type& b10) {
+            co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10);
+        })
+        .def("bexchange", [] (communication_object_type& co,
+                              buffer_info_type& b1,
+                              buffer_info_type& b2,
+                              buffer_info_type& b3,
+                              buffer_info_type& b4,
+                              buffer_info_type& b5,
+                              buffer_info_type& b6,
+                              buffer_info_type& b7,
+                              buffer_info_type& b8,
+                              buffer_info_type& b9,
+                              buffer_info_type& b10,
+                              buffer_info_type& b11) {
+            co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11);
+        })
+        .def("bexchange", [] (communication_object_type& co,
+                              buffer_info_type& b1,
+                              buffer_info_type& b2,
+                              buffer_info_type& b3,
+                              buffer_info_type& b4,
+                              buffer_info_type& b5,
+                              buffer_info_type& b6,
+                              buffer_info_type& b7,
+                              buffer_info_type& b8,
+                              buffer_info_type& b9,
+                              buffer_info_type& b10,
+                              buffer_info_type& b11,
+                              buffer_info_type& b12) {
+            co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12);
+        })
+        .def("bexchange", [] (communication_object_type& co,
+                              buffer_info_type& b1,
+                              buffer_info_type& b2,
+                              buffer_info_type& b3,
+                              buffer_info_type& b4,
+                              buffer_info_type& b5,
+                              buffer_info_type& b6,
+                              buffer_info_type& b7,
+                              buffer_info_type& b8,
+                              buffer_info_type& b9,
+                              buffer_info_type& b10,
+                              buffer_info_type& b11,
+                              buffer_info_type& b12,
+                              buffer_info_type& b13) {
+            co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13);
+        })
         .def("bexchange_async", [] (communication_object_type& co,
                                     buffer_info_type& b) {
-            return co.bexchange(b);
+            co.bexchange(b);
         }, py::call_guard<py::gil_scoped_release>())
         .def("bexchange_async", [] (communication_object_type& co,
                                     buffer_info_type& b1,
                                     buffer_info_type& b2) {
-            return co.bexchange(b1, b2);
+            co.bexchange(b1, b2);
         }, py::call_guard<py::gil_scoped_release>())
         .def("bexchange_async", [] (communication_object_type& co,
                                     buffer_info_type& b1,
                                     buffer_info_type& b2,
                                     buffer_info_type& b3) {
-            return co.bexchange(b1, b2, b3);
+            co.bexchange(b1, b2, b3);
         }, py::call_guard<py::gil_scoped_release>())
         .def("bexchange_async", [] (communication_object_type& co,
                                     buffer_info_type& b1,
                                     buffer_info_type& b2,
                                     buffer_info_type& b3,
                                     buffer_info_type& b4) {
-            return co.bexchange(b1, b2, b3, b4);
+            co.bexchange(b1, b2, b3, b4);
         }, py::call_guard<py::gil_scoped_release>())
         .def("bexchange_async", [] (communication_object_type& co,
                                     buffer_info_type& b1,
@@ -228,7 +358,7 @@ void communication_object_exporter(py::module_& m) {
                                     buffer_info_type& b3,
                                     buffer_info_type& b4,
                                     buffer_info_type& b5) {
-            return co.bexchange(b1, b2, b3, b4, b5);
+            co.bexchange(b1, b2, b3, b4, b5);
         }, py::call_guard<py::gil_scoped_release>())
         .def("bexchange_async", [] (communication_object_type& co,
                                     buffer_info_type& b1,
@@ -237,7 +367,7 @@ void communication_object_exporter(py::module_& m) {
                                     buffer_info_type& b4,
                                     buffer_info_type& b5,
                                     buffer_info_type& b6) {
-            return co.bexchange(b1, b2, b3, b4, b5, b6);
+            co.bexchange(b1, b2, b3, b4, b5, b6);
         }, py::call_guard<py::gil_scoped_release>())
         .def("bexchange_async", [] (communication_object_type& co,
                                     buffer_info_type& b1,
@@ -247,7 +377,7 @@ void communication_object_exporter(py::module_& m) {
                                     buffer_info_type& b5,
                                     buffer_info_type& b6,
                                     buffer_info_type& b7) {
-            return co.bexchange(b1, b2, b3, b4, b5, b6, b7);
+            co.bexchange(b1, b2, b3, b4, b5, b6, b7);
         }, py::call_guard<py::gil_scoped_release>())
         .def("bexchange_async", [] (communication_object_type& co,
                                     buffer_info_type& b1,
@@ -258,7 +388,7 @@ void communication_object_exporter(py::module_& m) {
                                     buffer_info_type& b6,
                                     buffer_info_type& b7,
                                     buffer_info_type& b8) {
-            return co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8);
+            co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8);
         }, py::call_guard<py::gil_scoped_release>())
         .def("bexchange_async", [] (communication_object_type& co,
                                     buffer_info_type& b1,
@@ -270,7 +400,7 @@ void communication_object_exporter(py::module_& m) {
                                     buffer_info_type& b7,
                                     buffer_info_type& b8,
                                     buffer_info_type& b9) {
-            return co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9);
+            co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9);
         }, py::call_guard<py::gil_scoped_release>())
         .def("bexchange_async", [] (communication_object_type& co,
                                     buffer_info_type& b1,
@@ -283,7 +413,7 @@ void communication_object_exporter(py::module_& m) {
                                     buffer_info_type& b8,
                                     buffer_info_type& b9,
                                     buffer_info_type& b10) {
-            return co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10);
+            co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10);
         }, py::call_guard<py::gil_scoped_release>())
         .def("bexchange_async", [] (communication_object_type& co,
                                     buffer_info_type& b1,
@@ -297,7 +427,7 @@ void communication_object_exporter(py::module_& m) {
                                     buffer_info_type& b9,
                                     buffer_info_type& b10,
                                     buffer_info_type& b11) {
-            return co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11);
+            co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11);
         }, py::call_guard<py::gil_scoped_release>())
         .def("bexchange_async", [] (communication_object_type& co,
                                     buffer_info_type& b1,
@@ -312,7 +442,7 @@ void communication_object_exporter(py::module_& m) {
                                     buffer_info_type& b10,
                                     buffer_info_type& b11,
                                     buffer_info_type& b12) {
-            return co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12);
+            co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12);
         }, py::call_guard<py::gil_scoped_release>())
         .def("bexchange_async", [] (communication_object_type& co,
                                     buffer_info_type& b1,
@@ -328,7 +458,7 @@ void communication_object_exporter(py::module_& m) {
                                     buffer_info_type& b11,
                                     buffer_info_type& b12,
                                     buffer_info_type& b13) {
-            return co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13);
+            co.bexchange(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13);
         }, py::call_guard<py::gil_scoped_release>());
 
     using communication_handle_type = typename communication_object_type::handle_type;
