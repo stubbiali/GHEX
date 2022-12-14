@@ -55,7 +55,7 @@ class HaloGenerator(CppWrapper):
 
 # todo: try importing gt4py to see if it's there, avoiding the dependency
 
-def _layout_order(field: np.ndarray, architecture: Architecture) -> tuple[int, ...]:
+def _layout_order(field: np.ndarray, architecture: Architecture) -> Tuple[int, ...]:
     if architecture == Architecture.CPU:
         strides = field.__array_interface__["strides"]
     elif architecture == Architecture.GPU:
