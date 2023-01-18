@@ -23,11 +23,11 @@ namespace bindings {
 namespace python {
 
 struct type_list {
-    using architecture_type = gridtools::ghex::cpu;
-    using layout_map_type = gridtools::layout_map<0, 1, 2>;
+    using architecture_type = gridtools::ghex::{{ architecture }};
+    using layout_map_type = gridtools::layout_map<{{ layout_map }}>;
 
     using domain_id_type = int;
-    using data_type = double;
+    using data_type = {{ cpp_dtype }};
     using grid_type = gridtools::ghex::structured::grid;
     using dim_type = std::integral_constant<int, 3>;
 
