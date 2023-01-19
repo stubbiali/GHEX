@@ -15,7 +15,6 @@ PRECISION_TO_CPP_TYPE = {64: "double", 32: "float"}
     "--architecture",
     type=str,
     help="Target architecture. Options: `cpu`, `gpu`. Default: `cpu`.",
-    show_default=False,
     default="cpu",
 )
 @click.option(
@@ -23,7 +22,6 @@ PRECISION_TO_CPP_TYPE = {64: "double", 32: "float"}
     "--layout-map",
     type=str,
     help="Storage layout. Options: any permutation of {0, 1, 2}. Default: `0, 1, 2`.",
-    show_default=False,
     default="0, 1, 2",
 )
 @click.option(
@@ -31,7 +29,6 @@ PRECISION_TO_CPP_TYPE = {64: "double", 32: "float"}
     "--precision",
     type=int,
     help="Floating point precision (in bits). Options: 64, 32. Default: 64.",
-    show_default=False,
     default=64,
 )
 def main(architecture: str, layout_map: str, precision: int) -> None:
