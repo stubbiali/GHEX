@@ -46,7 +46,7 @@ struct type_list {
     using transport_type = gridtools::ghex::tl::mpi_tag;
 };
 
-template<typename architecture_type, typename data_type, typename layout_map_type>
+template <typename architecture_type, typename data_type, typename layout_map_type>
 struct derived_type_list {
     using context_type = typename gridtools::ghex::tl::context_factory<
         typename type_list::transport_type>::context_type;
