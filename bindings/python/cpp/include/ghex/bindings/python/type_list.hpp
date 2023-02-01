@@ -39,12 +39,10 @@ struct type_list {
     using dim_type = std::integral_constant<int, 3>;
     using grid_type = gridtools::ghex::structured::grid;
     using layout_map_type = boost::mp11::mp_list<
-        gridtools::layout_map<0, 1, 2>,
-        gridtools::layout_map<0, 2, 1>,
-        gridtools::layout_map<1, 0, 2>,
-        gridtools::layout_map<1, 2, 0>,
-        gridtools::layout_map<2, 0, 1>,
-        gridtools::layout_map<2, 1, 0>>;
+        gridtools::layout_map<0, 1, 2>, // cpu_kfirst
+        gridtools::layout_map<2, 0, 1>, // cpu_ifirst
+        gridtools::layout_map<2, 1, 0>  // gpu
+    >;
     using transport_type = gridtools::ghex::tl::mpi_tag;
 };
 
