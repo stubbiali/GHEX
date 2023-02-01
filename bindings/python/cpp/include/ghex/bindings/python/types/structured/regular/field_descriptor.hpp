@@ -16,6 +16,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include "boost/mp11/algorithm.hpp"
+
 #include "gridtools/meta.hpp"
 
 #include "ghex/arch_list.hpp"
@@ -40,7 +42,7 @@ namespace regular {
 template <int... val>
 using int_tuple_constant = gridtools::meta::list<std::integral_constant<int, val>...>;
 
-template <typename Arch>
+template <typename architecture_type>
 struct buffer_info_accessor {};
 
 template <>
@@ -94,57 +96,68 @@ struct buffer_info_accessor<gridtools::ghex::gpu> {
 };
 #endif
 
-template <typename Arch>
+template <typename architecture_type>
 py::buffer_info get_buffer_info(py::object& buffer) {
-    return buffer_info_accessor<Arch>::get(buffer);
+    return buffer_info_accessor<architecture_type>::get(buffer);
 }
 
-void field_descriptor_exporter(py::module_& m) {
-    using architecture_type = typename gridtools::ghex::bindings::python::type_list::architecture_type;
-    using data_type = typename gridtools::ghex::bindings::python::type_list::data_type;
-    using dim_type = typename gridtools::ghex::bindings::python::type_list::dim_type;
-    using domain_id_type = typename gridtools::ghex::bindings::python::type_list::domain_id_type;
-    using layout_map_type = typename gridtools::ghex::bindings::python::type_list::layout_map_type;
+template <typename architecture_type, typename data_type, typename layout_map_type>
+struct field_descriptor_exporter {
+    using type_list = gridtools::ghex::bindings::python::type_list;
+    using derived_type_list = gridtools::ghex::bindings::python::derived_type_list<
+        architecture_type, data_type, layout_map_type>;
 
-    using domain_descriptor_type = gridtools::ghex::structured::regular::domain_descriptor<
-        domain_id_type, dim_type>;
-    using field_descriptor_type = gridtools::ghex::structured::regular::field_descriptor<
-        data_type, architecture_type, domain_descriptor_type, layout_map_type>;
-    auto field_descriptor_name = gridtools::ghex::bindings::python::utils::demangle<field_descriptor_type>();
-    using array_type = std::array<int, dim_type::value>;
+    using field_descriptor_type = typename derived_type_list::field_descriptor_type;
 
-    auto wrapper = [] (const domain_descriptor_type& dom, py::object& b, const array_type& offsets, const array_type& extents) {
-        py::buffer_info info = get_buffer_info<architecture_type>(b);
+    void operator() (py::module_& m) {
+        using array_type = std::array<int, type_list::dim_type::value>;
+        using domain_descriptor_type = typename derived_type_list::domain_descriptor_type;
 
-        if (info.format != py::format_descriptor<data_type>::format()) {
-            std::stringstream error;
-            error << "Incompatible format: expected a " << typeid(data_type).name() << " buffer.";
-            throw pybind11::type_error(error.str());
-        }
+        auto wrapper = [] (const domain_descriptor_type& dom, py::object& b, const array_type& offsets, const array_type& extents) {
+            py::buffer_info info = get_buffer_info<architecture_type>(b);
 
-        auto ordered_strides = info.strides;
-        std::sort(ordered_strides.begin(), ordered_strides.end(), [](int a, int b) { return a > b; });
-        std::array<int, 3> layout_map;
-        for (size_t i=0; i<3; ++i) {
-            auto it = std::find(ordered_strides.begin(), ordered_strides.end(), info.strides[i]);
-            layout_map[i] = std::distance(ordered_strides.begin(), it);
-            if (layout_map[i] != layout_map_type::at(i)) {
-                throw pybind11::type_error("Buffer has a different layout than specified.");
+            if (info.format != py::format_descriptor<data_type>::format()) {
+                std::stringstream error;
+                error << "Incompatible format: expected a " << typeid(data_type).name() << " buffer.";
+                throw pybind11::type_error(error.str());
             }
-        }
 
-        if (info.ndim != 3)
-            throw std::runtime_error("Incompatible buffer dimension.");
+            auto ordered_strides = info.strides;
+            std::sort(ordered_strides.begin(), ordered_strides.end(), [](int a, int b) { return a > b; });
+            std::array<int, 3> layout_map;
+            for (size_t i=0; i<3; ++i) {
+                auto it = std::find(ordered_strides.begin(), ordered_strides.end(), info.strides[i]);
+                layout_map[i] = std::distance(ordered_strides.begin(), it);
+                if (layout_map[i] != layout_map_type::at(i)) {
+                    throw pybind11::type_error("Buffer has a different layout than specified.");
+                }
+            }
 
-        return gridtools::ghex::wrap_field<architecture_type, layout_map_type>(
-            dom, static_cast<data_type*>(info.ptr), offsets, extents, info.strides);
-    };
+            if (info.ndim != 3)
+                throw std::runtime_error("Incompatible buffer dimension.");
 
-    py::class_<field_descriptor_type>(m, field_descriptor_name.c_str())
-        .def_property_readonly_static("__cpp_type__", [field_descriptor_name] (const pybind11::object&) {
-            return field_descriptor_name;
-        })
-        .def(py::init(wrapper));
+            return gridtools::ghex::wrap_field<architecture_type, layout_map_type>(
+                dom, static_cast<data_type*>(info.ptr), offsets, extents, info.strides);
+        };
+
+        auto field_descriptor_name = gridtools::ghex::bindings::python::utils::demangle<
+            field_descriptor_type>();
+
+        py::class_<field_descriptor_type>(m, field_descriptor_name.c_str())
+            .def_property_readonly_static("__cpp_type__", [field_descriptor_name] (const pybind11::object&) {
+                return field_descriptor_name;
+            })
+            .def(py::init(wrapper));
+    }
+};
+
+void export_field_descriptor (py::module_& m) {
+    using exporter_list = boost::mp11::mp_product<
+        field_descriptor_exporter,
+        typename gridtools::ghex::bindings::python::type_list::architecture_type,
+        typename gridtools::ghex::bindings::python::type_list::data_type,
+        typename gridtools::ghex::bindings::python::type_list::layout_map_type>;
+    boost::mp11::mp_for_each<exporter_list>([&](auto exporter){ exporter(m); });
 }
 
 }

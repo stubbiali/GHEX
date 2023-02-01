@@ -17,6 +17,7 @@
 #include <pybind11/stl.h>
 
 #include "ghex/bindings/python/types/buffer_info.hpp"
+#include "ghex/bindings/python/types/communication_handle.hpp"
 #include "ghex/bindings/python/types/communication_object.hpp"
 #include "ghex/bindings/python/types/pattern.hpp"
 #include "ghex/bindings/python/types/common/coordinate.hpp"
@@ -46,13 +47,14 @@ PYBIND11_MODULE(ghex_py_bindings, m) {
     pybind11::class_<mpi_comm_shim> mpi_comm(m, "mpi_comm");
     mpi_comm.def(pybind11::init<>());
 
-    ghex4py::types::buffer_info_exporter(m);
-    ghex4py::types::communication_object_exporter(m);
-    ghex4py::types::pattern_container_exporter(m);
-    ghex4py::types::common::coordinate_exporter(m);
-    ghex4py::types::structured::regular::domain_descriptor_exporter(m);
-    ghex4py::types::structured::regular::field_descriptor_exporter(m);
-    ghex4py::types::structured::regular::halo_generator_exporter(m);
-    ghex4py::types::transport_layer::communicator_exporter(m);
-    ghex4py::types::transport_layer::context_exporter(m);
+    ghex4py::types::export_buffer_info(m);
+    ghex4py::types::export_communication_handle(m);
+    ghex4py::types::export_communication_object(m);
+    ghex4py::types::export_pattern_container(m);
+    ghex4py::types::common::export_coordinate(m);
+    ghex4py::types::structured::regular::export_domain_descriptor(m);
+    ghex4py::types::structured::regular::export_field_descriptor(m);
+    ghex4py::types::structured::regular::export_halo_generator(m);
+    ghex4py::types::transport_layer::export_communicator(m);
+    ghex4py::types::transport_layer::export_context(m);
 }

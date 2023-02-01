@@ -16,6 +16,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include "boost/mp11/bind.hpp"
+
 #include "ghex/bindings/python/type_list.hpp"
 #include "ghex/bindings/python/utils/demangle.hpp"
 
@@ -28,8 +30,10 @@ namespace python {
 namespace types {
 namespace transport_layer {
 
-void communicator_exporter (py::module_& m) {
-    using communicator_type = typename gridtools::ghex::bindings::python::type_list::communicator_type;
+void export_communicator (py::module_& m) {
+    using derived_type_list = gridtools::ghex::bindings::python::derived_type_list<
+        boost::mp11::_1, boost::mp11::_2, boost::mp11::_3>;
+    using communicator_type = typename derived_type_list::communicator_type;
     auto communicator_name = gridtools::ghex::bindings::python::utils::demangle<communicator_type>();
 
     py::class_<communicator_type>(m, communicator_name.c_str())

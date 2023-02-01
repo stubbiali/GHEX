@@ -21,8 +21,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "ghex/transport_layer/context.hpp"
-#include "ghex/transport_layer/mpi/context.hpp"
+#include "boost/mp11/bind.hpp"
 
 #include "ghex/bindings/python/type_list.hpp"
 #include "ghex/bindings/python/utils/demangle.hpp"
@@ -36,8 +35,10 @@ namespace python {
 namespace types {
 namespace transport_layer {
 
-void context_exporter(py::module_& m) {
-    using context_type = typename gridtools::ghex::bindings::python::type_list::context_type;
+void export_context (py::module_& m) {
+    using derived_type_list = gridtools::ghex::bindings::python::derived_type_list<
+        boost::mp11::_1, boost::mp11::_2, boost::mp11::_3>;
+    using context_type = typename derived_type_list::context_type;
     auto context_name = gridtools::ghex::bindings::python::utils::demangle<context_type>();
 
     auto context_cls = py::class_<context_type>(m, context_name.c_str())

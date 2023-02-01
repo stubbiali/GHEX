@@ -10,10 +10,16 @@
  */
 #pragma once
 
+#include "boost/mp11/list.hpp"
+
 #include "gridtools/common/layout_map.hpp"
 
 #include "ghex/arch_list.hpp"
 #include "ghex/structured/grid.hpp"
+#include "ghex/structured/pattern.hpp"
+#include "ghex/structured/regular/domain_descriptor.hpp"
+#include "ghex/structured/regular/field_descriptor.hpp"
+#include "ghex/structured/regular/halo_generator.hpp"
 #include "ghex/transport_layer/context.hpp"
 #include "ghex/transport_layer/mpi/context.hpp"
 
@@ -23,20 +29,47 @@ namespace bindings {
 namespace python {
 
 struct type_list {
-    using architecture_type = gridtools::ghex::cpu;
-    using layout_map_type = gridtools::layout_map<0, 1, 2>;
-
+#ifdef __CUDA__
+    using architecture_type = boost::mp11::mp_list<gridtools::ghex::cpu, gridtools::ghex::gpu>;
+#else
+    using architecture_type = boost::mp11::mp_list<gridtools::ghex::cpu>;
+#endif
     using domain_id_type = int;
-    using data_type = double;
-    using grid_type = gridtools::ghex::structured::grid;
+    using data_type = boost::mp11::mp_list<float, double>;
     using dim_type = std::integral_constant<int, 3>;
-
-    template <typename DomainDescriptor>
-    using domain_range_type = std::vector<DomainDescriptor>;
-
+    using grid_type = gridtools::ghex::structured::grid;
+    using layout_map_type = boost::mp11::mp_list<
+        gridtools::layout_map<0, 1, 2>,
+        gridtools::layout_map<0, 2, 1>,
+        gridtools::layout_map<1, 0, 2>,
+        gridtools::layout_map<1, 2, 0>,
+        gridtools::layout_map<2, 0, 1>,
+        gridtools::layout_map<2, 1, 0>>;
     using transport_type = gridtools::ghex::tl::mpi_tag;
-    using context_type = typename gridtools::ghex::tl::context_factory<transport_type>::context_type;
+};
+
+template<typename architecture_type, typename data_type, typename layout_map_type>
+struct derived_type_list {
+    using context_type = typename gridtools::ghex::tl::context_factory<
+        typename type_list::transport_type>::context_type;
     using communicator_type = typename context_type::communicator_type;
+
+    using domain_descriptor_type = gridtools::ghex::structured::regular::domain_descriptor<
+        typename type_list::domain_id_type, typename type_list::dim_type>;
+    using domain_range_type = std::vector<domain_descriptor_type>;
+    using halo_generator_type = gridtools::ghex::structured::regular::halo_generator<
+        typename type_list::domain_id_type, typename type_list::dim_type>;
+    using pattern_container_type = decltype(gridtools::ghex::make_pattern<
+        type_list::grid_type>(
+            std::declval<context_type&>(),
+            std::declval<halo_generator_type&>(),
+            std::declval<domain_range_type&>()
+        )
+    );
+    using field_descriptor_type = gridtools::ghex::structured::regular::field_descriptor<
+        data_type, architecture_type, domain_descriptor_type, layout_map_type>;
+
+    using grid_impl_type = typename type_list::grid_type::template type<domain_descriptor_type>;
 };
 
 }

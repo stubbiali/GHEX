@@ -30,7 +30,7 @@ namespace python {
 namespace types {
 namespace common {
 
-void coordinate_exporter (py::module_& m) {
+void export_coordinate (py::module_& m) {
     using coordinate_type = gridtools::ghex::coordinate<
         std::array<
             typename gridtools::ghex::bindings::python::type_list::domain_id_type,
