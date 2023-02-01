@@ -29,7 +29,7 @@ namespace bindings {
 namespace python {
 
 struct type_list {
-#ifdef __CUDA__
+#ifdef __CUDACC__
     using architecture_type = boost::mp11::mp_list<gridtools::ghex::cpu, gridtools::ghex::gpu>;
 #else
     using architecture_type = boost::mp11::mp_list<gridtools::ghex::cpu>;
