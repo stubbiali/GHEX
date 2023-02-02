@@ -11,14 +11,9 @@
 #ifndef INCLUDED_GHEX_PYBIND_HALO_GENERATOR_HPP
 #define INCLUDED_GHEX_PYBIND_HALO_GENERATOR_HPP
 
-#include <sstream>
-
 #include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
 
 #include "boost/mp11/bind.hpp"
-
-#include "gridtools/meta.hpp"
 
 #include "ghex/bindings/python/type_list.hpp"
 #include "ghex/bindings/python/utils/demangle.hpp"
@@ -33,46 +28,53 @@ namespace types {
 namespace structured {
 namespace regular {
 
-void export_halo_generator (py::module_& m) {
-    using type_list = gridtools::ghex::bindings::python::type_list;
-    using derived_type_list = gridtools::ghex::bindings::python::derived_type_list<
-        boost::mp11::_1, boost::mp11::_2, boost::mp11::_3>;
+template <typename dim_type>
+class halo_generator_exporter {
+    private:
+        using type_list = gridtools::ghex::bindings::python::type_list;
+        using derived_type_list = gridtools::ghex::bindings::python::derived_type_list<dim_type>;
 
-    using dim_type = typename type_list::dim_type;
-    using domain_id_type = typename type_list::domain_id_type;
+        using domain_id_type = typename type_list::domain_id_type;
+        static_assert(std::is_same<domain_id_type, int>::value, "Not implemented. Only integer domain types allowed for now.");
 
-    static_assert(std::is_same<domain_id_type, int>::value, "Not implemented. Only integer domain types allowed for now.");
+        using halo_generator_type = typename derived_type_list::halo_generator_type;
+        using box_type = typename halo_generator_type::box;
+        using box2_type = typename halo_generator_type::box2;
 
-    using halo_generator_type = typename derived_type_list::halo_generator_type;
-    auto halo_generator_name = gridtools::ghex::bindings::python::utils::demangle<
-        halo_generator_type>();
+        using dim_array_type = std::array<int, dim_type::value>;
+        using halo_array_type = std::array<int, 2 * dim_type::value>;
+        using periodic_array_type = std::array<bool, dim_type::value>;
 
-    using dim_array_t = std::array<int, dim_type::value>;
-    using halo_array_t = std::array<int, 2 * dim_type::value>;
-    using periodic_array_t = std::array<bool, dim_type::value>;
+    public:
+        void operator() (py::module_& m) {
+            auto halo_generator_name = gridtools::ghex::bindings::python::utils::demangle<
+                halo_generator_type>();
+            py::class_<halo_generator_type>(m, halo_generator_name.c_str())
+                .def_property_readonly_static("__cpp_type__", [halo_generator_name] (const pybind11::object&) {
+                    return halo_generator_name;
+                })
+                .def(py::init<dim_array_type, dim_array_type, halo_array_type, periodic_array_type>())
+                .def("__call__", &halo_generator_type::operator()); // todo
 
-    // halo_generator
-    py::class_<halo_generator_type>(m, halo_generator_name.c_str())
-        .def_property_readonly_static("__cpp_type__", [halo_generator_name] (const pybind11::object&) {
-            return halo_generator_name;
-        })
-        .def(py::init<dim_array_t, dim_array_t, halo_array_t, periodic_array_t>())
-        .def("__call__", &halo_generator_type::operator()); // todo
+            auto box_name = gridtools::ghex::bindings::python::utils::demangle<box_type>();
+            py::class_<box_type>(m, box_name.c_str())
+                .def_property_readonly("first", [] (const box_type& b) {
+                    auto first = b.first();
+                    return static_cast<typename decltype(first)::array_type>(first);
+                })
+                .def_property_readonly("last", [] (const box_type& b) {
+                    auto last = b.last();
+                    return static_cast<typename decltype(last)::array_type>(last);
+                });
 
-    // box2
-    py::class_<typename halo_generator_type::box2>(m, "Box2")
-        .def_property_readonly("local", py::overload_cast<>(&halo_generator_type::box2::local, py::const_))
-        .def_property_readonly("global_", py::overload_cast<>(&halo_generator_type::box2::global, py::const_));
-    py::class_<typename halo_generator_type::box>(m, "Box")
-        .def_property_readonly("first", [] (const typename halo_generator_type::box& b) {
-            auto first = b.first();
-            return static_cast<typename decltype(first)::array_type>(first);
-        })
-        .def_property_readonly("last", [] (const typename halo_generator_type::box& b) {
-            auto last = b.last();
-            return static_cast<typename decltype(last)::array_type>(last);
-        });
-}
+            auto box2_name = gridtools::ghex::bindings::python::utils::demangle<box2_type>();
+            py::class_<box2_type>(m, box2_name.c_str())
+                .def_property_readonly("local", py::overload_cast<>(&box2_type::local, py::const_))
+                .def_property_readonly("global_", py::overload_cast<>(&box2_type::global, py::const_));
+        }
+};
+
+void export_halo_generator (py::module_& m);
 
 }
 }

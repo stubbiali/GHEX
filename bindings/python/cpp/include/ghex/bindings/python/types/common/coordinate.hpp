@@ -11,10 +11,7 @@
 #ifndef INCLUDED_GHEX_PYBIND_COORDINATE_HPP
 #define INCLUDED_GHEX_PYBIND_COORDINATE_HPP
 
-#include <sstream>
-
 #include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
 
 #include "ghex/common/coordinate.hpp"
 
@@ -30,20 +27,23 @@ namespace python {
 namespace types {
 namespace common {
 
-void export_coordinate (py::module_& m) {
-    using coordinate_type = gridtools::ghex::coordinate<
-        std::array<
-            typename gridtools::ghex::bindings::python::type_list::domain_id_type,
-            gridtools::ghex::bindings::python::type_list::dim_type::value
-        >
-    >;
-    auto coordinate_name = gridtools::ghex::bindings::python::utils::demangle<coordinate_type>();
+template <typename dim_type>
+class coordinate_exporter {
+    private:
+        using type_list = gridtools::ghex::bindings::python::type_list;
+        using coordinate_type = gridtools::ghex::coordinate<std::array<
+            typename type_list::domain_id_type, dim_type::value>>;
 
-    py::class_<coordinate_type>(m, coordinate_name.c_str())
-        .def_property_readonly_static("__cpp_type__", [coordinate_name] (const pybind11::object&) {
-            return coordinate_name;
-        });
-}
+    public:
+        void operator() (py::module_& m) {
+            auto coordinate_name = gridtools::ghex::bindings::python::utils::demangle<coordinate_type>();
+            py::class_<coordinate_type>(m, coordinate_name.c_str())
+                .def_property_readonly_static("__cpp_type__", [coordinate_name] (const pybind11::object&) {
+                    return coordinate_name; });
+        }
+};
+
+void export_coordinate (py::module_& m);
 
 }
 }

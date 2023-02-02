@@ -41,26 +41,31 @@ constexpr auto as_tuple(const std::array<T, N> &arr) {
     return as_tuple(arr, std::make_index_sequence<N>{});
 }
 
-void export_domain_descriptor (py::module_& m) {
-    using type_list = gridtools::ghex::bindings::python::type_list;
-    using derived_type_list = gridtools::ghex::bindings::python::derived_type_list<
-        boost::mp11::_1, boost::mp11::_2, boost::mp11::_3>;
+template <typename dim_type>
+class domain_descriptor_exporter {
+    private:
+        using type_list = gridtools::ghex::bindings::python::type_list;
+        using derived_type_list = gridtools::ghex::bindings::python::derived_type_list<dim_type>;
 
-    using domain_descriptor_type = typename derived_type_list::domain_descriptor_type;
-    auto domain_descriptor_name = gridtools::ghex::bindings::python::utils::demangle<
-        domain_descriptor_type>();
+        using domain_descriptor_type = typename derived_type_list::domain_descriptor_type;
+        using dim_array_t = std::array<int, dim_type::value>;
 
-    using dim_array_t = std::array<int, type_list::dim_type::value>;
+    public:
+        void operator() (py::module_& m) {
+            auto domain_descriptor_name = gridtools::ghex::bindings::python::utils::demangle<
+                domain_descriptor_type>();
+            py::class_<domain_descriptor_type>(m, domain_descriptor_name.c_str())
+                .def_property_readonly_static("__cpp_type__", [domain_descriptor_name] (const pybind11::object&) {
+                    return domain_descriptor_name;
+                })
+                .def(py::init<typename type_list::domain_id_type, dim_array_t, dim_array_t>())
+                .def("domain_id", &domain_descriptor_type::domain_id)
+                .def("first", [] (const domain_descriptor_type& domain_desc) { return as_tuple(domain_desc.first()); })
+                .def("last", [] (const domain_descriptor_type& domain_desc) { return as_tuple(domain_desc.last()); });
+        }
+};
 
-    py::class_<domain_descriptor_type>(m, domain_descriptor_name.c_str())
-        .def_property_readonly_static("__cpp_type__", [domain_descriptor_name] (const pybind11::object&) {
-            return domain_descriptor_name;
-        })
-        .def(py::init<typename type_list::domain_id_type, dim_array_t, dim_array_t>())
-        .def("domain_id", &domain_descriptor_type::domain_id)
-        .def("first", [] (const domain_descriptor_type& domain_desc) { return as_tuple(domain_desc.first()); })
-        .def("last", [] (const domain_descriptor_type& domain_desc) { return as_tuple(domain_desc.last()); });
-}
+void export_domain_descriptor (py::module_& m);
 
 }
 }

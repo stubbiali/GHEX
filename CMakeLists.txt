@@ -226,7 +226,20 @@ if (GHEX_BUILD_PYTHON_BINDINGS)
 
     find_python_module(mpi4py)
 
-    set(GHEX_PYTHON_BINDINGS_SOURCE_FILES bindings/python/cpp/src/ghex.cpp)
+    set(
+        GHEX_PYTHON_BINDINGS_SOURCE_FILES
+        bindings/python/cpp/src/ghex.cpp
+        bindings/python/cpp/src/types/buffer_info.cpp
+        bindings/python/cpp/src/types/communication_handle.cpp
+        bindings/python/cpp/src/types/communication_object.cpp
+        bindings/python/cpp/src/types/pattern.cpp
+        bindings/python/cpp/src/types/common/coordinate.cpp
+        bindings/python/cpp/src/types/structured/regular/domain_descriptor.cpp
+        bindings/python/cpp/src/types/structured/regular/field_descriptor.cpp
+        bindings/python/cpp/src/types/structured/regular/halo_generator.cpp
+        bindings/python/cpp/src/types/transport_layer/communicator.cpp
+        bindings/python/cpp/src/types/transport_layer/context.cpp
+    )
     pybind11_add_module(ghex_py_bindings ${GHEX_PYTHON_BINDINGS_SOURCE_FILES})
     if(USE_GPU)
         set_source_files_properties(${GHEX_PYTHON_BINDINGS_SOURCE_FILES} PROPERTIES LANGUAGE CUDA)
