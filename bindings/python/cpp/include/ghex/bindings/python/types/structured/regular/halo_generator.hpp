@@ -12,6 +12,7 @@
 #define INCLUDED_GHEX_PYBIND_HALO_GENERATOR_HPP
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include "boost/mp11/bind.hpp"
 

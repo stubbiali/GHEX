@@ -12,6 +12,7 @@
 #define INCLUDED_GHEX_PYBIND_COMMUNICATION_HANDLE_HPP
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include "ghex/buffer_info.hpp"
 #include "ghex/communication_object_2.hpp"

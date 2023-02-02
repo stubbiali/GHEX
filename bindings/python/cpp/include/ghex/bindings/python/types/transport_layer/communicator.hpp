@@ -12,6 +12,7 @@
 #define INCLUDED_GHEX_PYBIND_COMMUNICATOR_HPP
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include "ghex/bindings/python/type_list.hpp"
 #include "ghex/bindings/python/utils/demangle.hpp"

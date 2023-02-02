@@ -12,6 +12,7 @@
 #define INCLUDED_GHEX_PYBIND_COORDINATE_HPP
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include "ghex/common/coordinate.hpp"
 
