@@ -42,7 +42,6 @@ class pattern_container_exporter {
         using exported_type = py::class_<pattern_container_type>;
 
     private:
-        static bool initialized;
         static std::unique_ptr<exported_type> exported_obj;
 
         void set_exported_obj (py::module_& m) {
@@ -65,17 +64,14 @@ class pattern_container_exporter {
 
     public:
         exported_type operator() (py::module_& m) {
-            if (!pattern_container_exporter<dim_type>::initialized) {
+            if (pattern_container_exporter<dim_type>::exported_obj == nullptr) {
                 set_exported_obj(m);
-
                 auto make_pattern_wrapper = [] (
                     typename derived_type_list::context_type& context,
                     typename derived_type_list::halo_generator_type& hgen,
                     typename derived_type_list::domain_range_type& d_range) {
                     return gridtools::ghex::make_pattern<typename type_list::grid_type>(context, hgen, d_range); };
                 m.def("make_pattern", make_pattern_wrapper);
-
-                pattern_container_exporter<dim_type>::initialized = true;
             }
             return *pattern_container_exporter<dim_type>::exported_obj;
         }

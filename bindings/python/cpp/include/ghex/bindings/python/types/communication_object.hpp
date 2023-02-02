@@ -44,7 +44,6 @@ class communication_object_exporter {
         using exported_type = py::class_<communication_object_type>;
 
     private:
-        static bool initialized;
         static std::unique_ptr<exported_type> exported_obj;
 
         void set_exported_obj (py::module_& m) {
@@ -60,9 +59,8 @@ class communication_object_exporter {
 
     public:
         exported_type operator() (py::module_& m) {
-            if (!communication_object_exporter<dim_type>::initialized) {
+            if (communication_object_exporter<dim_type>::exported_obj == nullptr) {
                 set_exported_obj(m);
-                communication_object_exporter<dim_type>::initialized = true;
             }
             return *communication_object_exporter<dim_type>::exported_obj;
         }

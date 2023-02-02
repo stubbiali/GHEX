@@ -21,14 +21,10 @@ namespace types {
 // specializations for 3d fields
 using exporter_3d = pattern_container_exporter<std::integral_constant<int, 3>>;
 template <>
-bool exporter_3d::initialized = false;
-template <>
 std::unique_ptr<exporter_3d::exported_type> exporter_3d::exported_obj = nullptr;
 
 // specializations for 2d fields
 using exporter_2d = pattern_container_exporter<std::integral_constant<int, 2>>;
-template <>
-bool exporter_2d::initialized = false;
 template <>
 std::unique_ptr<exporter_2d::exported_type> exporter_2d::exported_obj = nullptr;
 
