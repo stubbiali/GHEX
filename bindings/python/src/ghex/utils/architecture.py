@@ -9,6 +9,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 from enum import Enum
 
+
 class Architecture(Enum):
     CPU = "gridtools::ghex::cpu"
     GPU = "gridtools::ghex::gpu"
