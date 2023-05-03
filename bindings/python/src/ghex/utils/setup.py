@@ -38,8 +38,10 @@ def validate_library_version(_ghex):
     if mpi4py is None:
         return
 
+    from mpi4py import MPI
+
     ghex_mpi_lib_ver = _ghex.utils.mpi_library_version()
-    mpi4py_lib_ver = mpi4py.MPI.Get_library_version()
+    mpi4py_lib_ver = MPI.Get_library_version()
     # fix erroneous nullbyte at the end
     if mpi4py_lib_ver[-1] == "\x00":
         mpi4py_lib_ver = mpi4py_lib_ver[:-1]
