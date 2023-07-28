@@ -10,6 +10,8 @@
  */
 #include "boost/mp11/algorithm.hpp"
 
+#include "gridtools/common/defs.hpp"
+
 #include "ghex/bindings/python/types/structured/regular/field_descriptor.hpp"
 
 namespace gridtools {
@@ -31,7 +33,11 @@ struct buffer_info_accessor<gridtools::ghex::cpu> {
 template <>
 struct buffer_info_accessor<gridtools::ghex::gpu> {
     static py::buffer_info get(py::object& buffer) {
+#ifdef __HIP__
+        py::dict info = buffer.attr("__hip_array_interface__");
+#else
         py::dict info = buffer.attr("__cuda_array_interface__");
+#endif
 
         bool readonly = info["data"].cast<py::tuple>()[1].cast<bool>();
         assert(!readonly);

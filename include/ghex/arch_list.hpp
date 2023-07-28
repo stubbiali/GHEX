@@ -13,6 +13,8 @@
 
 #include <tuple>
 
+#include "gridtools/common/defs.hpp"
+
 namespace gridtools {
     namespace ghex {
 

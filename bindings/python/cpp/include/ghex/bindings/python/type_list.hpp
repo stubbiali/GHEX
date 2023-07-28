@@ -13,6 +13,7 @@
 
 #include "boost/mp11/list.hpp"
 
+#include "gridtools/common/defs.hpp"
 #include "gridtools/common/layout_map.hpp"
 
 #include "ghex/arch_list.hpp"

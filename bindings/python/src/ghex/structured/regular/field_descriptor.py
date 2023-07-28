@@ -58,7 +58,7 @@ def get_field_descriptor(
     architecture: Optional[Architecture] = None,
 ):
     if not architecture:
-        if hasattr(field, "__cuda_array_interface__"):
+        if hasattr(field, "__cuda_array_interface__") or hasattr(field, "__hip_array_interface__"):
             architecture = Architecture.GPU
         elif hasattr(field, "__array_interface__"):
             architecture = Architecture.CPU
