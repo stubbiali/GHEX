@@ -272,18 +272,29 @@ if (GHEX_BUILD_PYTHON_BINDINGS)
         bindings/python/cpp/src/types/transport_layer/context.cpp
     )
     pybind11_add_module(ghex_py_bindings ${GHEX_PYTHON_BINDINGS_SOURCE_FILES})
+
     if (USE_GPU)
-        if (USE_HIP)
-            target_compile_definitions(ghex_py_bindings PRIVATE __HIP__ __HIP_ROCclr__)
-            target_compile_options(
-                ghex_py_bindings
-                PRIVATE
-                $<$<COMPILE_LANGUAGE:CXX>:-xhip --offload-arch=${GPU_ARCH} -D__HIP_ARCH_GFX90A__=1>
-            )
+        if (ghex_gpu_mode STREQUAL "hip")
+            target_compile_definitions(ghex_py_bindings PRIVATE __HIP_PLATFORM_HCC__)
+            target_compile_options(ghex_py_bindings PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-xhip>)
+            if (GHEX_GPU_ARCH)
+            string(TOUPPER GHEX_GPU_ARCH ghex_gpu_arch_uppercase)
+                target_compile_options(
+                    ghex_py_bindings
+                    PRIVATE
+                    $<$<COMPILE_LANGUAGE:CXX>:--offload-arch=${GHEX_GPU_ARCH} -D__HIP_ARCH_${ghex_gpu_arch_uppercase}__=1>
+                )
+            endif()
         else()
             set_source_files_properties(${GHEX_PYTHON_BINDINGS_SOURCE_FILES} PROPERTIES LANGUAGE CUDA)
+            if (${CMAKE_VERSION} VERSION_LESS "3.24.0" OR GHEX_GPU_ARCH)
+                set_target_properties(ghex_py_bindings PROPERTIES CUDA_ARCHITECTURES ${GHEX_GPU_ARCH})
+            else()
+                set_target_properties(ghex_py_bindings PROPERTIES CUDA_ARCHITECTURES native)
+            endif()
         endif()
     endif()
+
     target_include_directories(ghex_py_bindings PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/bindings/python/cpp/include")
     if (HAVE_MPI4PY)
         target_include_directories(ghex_py_bindings PRIVATE "${PY_MPI4PY}/include")
@@ -293,23 +304,6 @@ if (GHEX_BUILD_PYTHON_BINDINGS)
          Make sure mpi4py is importable in the environment in which cmake is invoked to avoid this.")
     endif()
     target_link_libraries(ghex_py_bindings PRIVATE ghexlib)
-
-	if (USE_GPU)
-        if (${CMAKE_VERSION} VERSION_LESS "3.24.0" OR GPU_ARCH)
-            if (USE_HIP)
-                set_target_properties(ghex_py_bindings PROPERTIES HIP_ARCHITECTURES ${GPU_ARCH})
-            else()
-                set_target_properties(ghex_py_bindings PROPERTIES CUDA_ARCHITECTURES ${GPU_ARCH})
-            endif()
-        else()
-            # target: host gpu
-            if (USE_HIP)
-                set_target_properties(ghex_py_bindings PROPERTIES HIP_ARCHITECTURES native)
-            else()
-                set_target_properties(ghex_py_bindings PROPERTIES CUDA_ARCHITECTURES native)
-            endif()
-        endif()
-    endif()
 endif()
 
 install(TARGETS ghexlib EXPORT GHEX-targets LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})

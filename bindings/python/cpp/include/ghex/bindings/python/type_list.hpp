@@ -13,7 +13,6 @@
 
 #include "boost/mp11/list.hpp"
 
-#include "gridtools/common/defs.hpp"
 #include "gridtools/common/layout_map.hpp"
 
 #include "ghex/arch_list.hpp"
@@ -32,7 +31,7 @@ namespace python {
 
 // fundamental types
 struct type_list {
-#ifdef __CUDACC__
+#ifdef GHEX_CUDACC
     using architecture_type = boost::mp11::mp_list<gridtools::ghex::cpu, gridtools::ghex::gpu>;
 #else
     using architecture_type = boost::mp11::mp_list<gridtools::ghex::cpu>;

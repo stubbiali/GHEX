@@ -10,9 +10,8 @@
  */
 #include "boost/mp11/algorithm.hpp"
 
-#include "gridtools/common/defs.hpp"
-
 #include "ghex/bindings/python/types/structured/regular/field_descriptor.hpp"
+#include "ghex/common/defs.hpp"
 
 namespace gridtools {
 namespace ghex {
@@ -29,11 +28,11 @@ struct buffer_info_accessor<gridtools::ghex::cpu> {
     }
 };
 
-#ifdef __CUDACC__
+#ifdef GHEX_CUDACC
 template <>
 struct buffer_info_accessor<gridtools::ghex::gpu> {
     static py::buffer_info get(py::object& buffer) {
-#ifdef __HIP__
+#ifdef __HIP_PLATFORM_HCC__
         py::dict info = buffer.attr("__hip_array_interface__");
 #else
         py::dict info = buffer.attr("__cuda_array_interface__");
