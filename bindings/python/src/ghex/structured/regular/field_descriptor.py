@@ -68,7 +68,7 @@ def get_field_descriptor(
     if architecture == Architecture.CPU:
         assert hasattr(field, "__array_interface__")
     if architecture == Architecture.GPU:
-        assert hasattr(field, "__cuda_array_interface__")
+        assert hasattr(field, "__cuda_array_interface__") or hasattr(field, "__hip_array_interface__")
 
     type_spec = (
         "gridtools::ghex::structured::regular::field_descriptor",
