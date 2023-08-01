@@ -278,7 +278,7 @@ if (GHEX_BUILD_PYTHON_BINDINGS)
             target_compile_definitions(ghex_py_bindings PRIVATE __HIP_PLATFORM_HCC__)
             target_compile_options(ghex_py_bindings PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-xhip>)
             if (GHEX_GPU_ARCH)
-            string(TOUPPER GHEX_GPU_ARCH ghex_gpu_arch_uppercase)
+            string(TOUPPER ${GHEX_GPU_ARCH} ghex_gpu_arch_uppercase)
                 target_compile_options(
                     ghex_py_bindings
                     PRIVATE
