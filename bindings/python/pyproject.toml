@@ -1,6 +1,6 @@
 [build-system]
 build-backend = 'setuptools.build_meta'
-requires = ['setuptools>=61.0.0', 'wheel', 'pybind11>=2.6']
+requires = ['mpi4py == 3.1.4', 'pybind11 == 2.11.1', 'setuptools == 68.1.2', 'wheel == 0.41.2']
 
 [project]
 authors = [{name = 'ETH Zurich', email = 'till.ehrengruber@cscs.ch'}]  # todo: contributor list in ghex?
@@ -14,7 +14,7 @@ classifiers = [
     'Programming Language :: Python :: Implementation :: CPython',
     'Topic :: Scientific/Engineering :: Distributed Computing'
 ]
-dependencies = ['mpi4py >= 3.0', 'numpy >= 1.17']
+dependencies = ['mpi4py == 3.1.4', 'numpy == 1.25.2']
 description = 'Python bindings to GHex: Generic exascale-ready library for halo-exchange operations on variety of grids/meshes.'
 keywords = ['ghex']
 license = {text = 'BSD-3-Clause'}
