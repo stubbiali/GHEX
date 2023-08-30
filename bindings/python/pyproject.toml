@@ -1,6 +1,6 @@
 [build-system]
 build-backend = 'setuptools.build_meta'
-requires = ['cmake', 'mpi4py >= 3.1', 'pybind11 >= 2.6', 'setuptools >= 65.0', 'wheel']
+requires = ['cmake', 'mpi4py>=3.1', 'pybind11>=2.6', 'setuptools>=65.5.0', 'wheel']
 
 [project]
 authors = [{name = 'ETH Zurich', email = 'till.ehrengruber@cscs.ch'}]  # todo: contributor list in ghex?
@@ -14,17 +14,17 @@ classifiers = [
     'Programming Language :: Python :: Implementation :: CPython',
     'Topic :: Scientific/Engineering :: Distributed Computing'
 ]
-dependencies = ['mpi4py >= 3.1', 'numpy >= 1.21']
+dependencies = ['mpi4py>=3.1', 'numpy>=1.21']
 description = 'Python bindings to GHex: Generic exascale-ready library for halo-exchange operations on variety of grids/meshes.'
 keywords = ['ghex']
 license = {text = 'BSD-3-Clause'}
 name = 'ghex'
 readme = {file = 'README.md', content-type = 'text/markdown'}
-requires-python = '>= 3.8'
+requires-python = '>=3.8'
 version = "0.0"
 
 [project.optional-dependencies]
-testing = ['pytest ~= 6.1']
+testing = ['pytest~=6.1']
 
 [project.urls]
 Source = 'https://github.com/GridTools/GHEX'
@@ -56,6 +56,7 @@ target-version = ['py38']
 
 [tool.setuptools]
 platforms = ['Linux', 'Mac']
+zip-safe = false
 
 [tool.setuptools.packages]
 find = {namespaces = false, where = ['src']}
