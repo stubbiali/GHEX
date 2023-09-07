@@ -42,7 +42,7 @@ class CMakeBuild(build_ext):
             cmake_args += [f"-DGHEX_GPU_TYPE={ghex_gpu_type}", f"-DGHEX_GPU_ARCH={ghex_gpu_arch}"]
 
         subprocess.run(["cmake", source_dir, *cmake_args], capture_output=False)
-        subprocess.run(["cmake", "--build", build_dir, "--", "-j 8"], capture_output=False)
+        subprocess.run(["cmake", "--build", build_dir, "--", "--jobs=8"], capture_output=False)
 
         ext_name = self.extensions[0].name
         src_path = os.path.join(build_dir, self.get_ext_filename(ext_name))
