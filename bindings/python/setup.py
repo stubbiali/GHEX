@@ -38,6 +38,9 @@ class CMakeBuild(build_ext):
         cmake_args.append(f"-DUSE_GPU={ghex_use_gpu}")
         if bool(ghex_use_gpu):
             ghex_gpu_type = os.environ.get("GHEX_GPU_TYPE", "AUTO")
+            if ghex_gpu_type == "NVIDIA":
+                cxx = os.environ.get("CXX", "g++")
+                cmake_args.append(f"-DCMAKE_CUDA_HOST_COMPILER={cxx}")
             ghex_gpu_arch = os.environ.get("GHEX_GPU_ARCH", "")
             cmake_args += [f"-DGHEX_GPU_TYPE={ghex_gpu_type}", f"-DGHEX_GPU_ARCH={ghex_gpu_arch}"]
 
