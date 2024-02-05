@@ -22,7 +22,7 @@ function(ghex_target_compile_options target)
     endif()
     if (ghex_gpu_mode STREQUAL "hip")
         find_package(hip REQUIRED)
-        target_link_libraries(pyghex_obj PRIVATE hip::device)
+        target_link_libraries(${target} PRIVATE hip::device)
     endif()
 endfunction()
 
