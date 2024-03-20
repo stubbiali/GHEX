@@ -10,9 +10,8 @@
 import pytest
 
 from ghex.context import make_context
-from ghex.structured.grid import IndexSpace, UnitRange
-from ghex.structured.regular.domain_descriptor import DomainDescriptor
-from ghex.structured.regular.halo_generator import HaloGenerator
+from ghex.structured.cartesian_sets import IndexSpace, UnitRange
+from ghex.structured.regular import DomainDescriptor, HaloGenerator
 
 
 # Domain configuration
@@ -85,9 +84,7 @@ def test_halo_gen_call(mpi_cart_comm, halos):
     sub_grid.add_subset("halo", owned_indices.extend(*halos).without(owned_indices))
 
     # construct halo_generator
-    halo_gen = HaloGenerator(
-        global_grid.subset["definition"], halos, periodicity
-    )
+    halo_gen = HaloGenerator(global_grid.subset["definition"], halos, periodicity)
 
     domain_desc = DomainDescriptor(ctx.rank(), owned_indices)
 

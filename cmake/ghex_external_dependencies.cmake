@@ -64,7 +64,6 @@ if(GHEX_USE_BUNDLED_OOMPH)
     endif()
     check_git_submodule(oomph ext/oomph)
     add_subdirectory(ext/oomph)
-    add_library(oomph::oomph ALIAS oomph)
     if(TARGET oomph_mpi)
         add_library(oomph::oomph_mpi ALIAS oomph_mpi)
     endif()
@@ -129,22 +128,35 @@ if (GHEX_ENABLE_ATLAS_BINDINGS)
     endif()
 endif()
 
-# Set up google test as an external project
-if (NOT ${GHEX_USE_BUNDLED_OOMPH})
-message(STATUS ${CMAKE_CURRENT_LIST_DIR})
-add_external_cmake_project(
-    NAME googletest
-    PATH ext/googletest
-    INTERFACE_NAME ext-gtest
-    LIBS libgtest.a libgtest_main.a
-    CMAKE_ARGS
-        "-DCMAKE_BUILD_TYPE=release"
-        "-DBUILD_SHARED_LIBS=OFF"
-        "-DBUILD_GMOCK=OFF")
-
-# on some systems we need link explicitly against threads
-if (TARGET ext-gtest)
-    find_package (Threads)
-    target_link_libraries(ext-gtest INTERFACE Threads::Threads)
-endif()
+# ---------------------------------------------------------------------
+# google test setup
+# ---------------------------------------------------------------------
+cmake_dependent_option(GHEX_USE_BUNDLED_GTEST "Use bundled googletest lib." ON
+    "GHEX_USE_BUNDLED_LIBS" OFF)
+if (GHEX_WITH_TESTING)
+    if(GHEX_USE_BUNDLED_GTEST)
+        add_external_cmake_project(
+            NAME googletest-ghex
+            PATH ext/googletest
+            INTERFACE_NAME ext-gtest-ghex
+            LIBS libgtest.a libgtest_main.a
+            CMAKE_ARGS
+                "-DCMAKE_BUILD_TYPE=release"
+                "-DBUILD_SHARED_LIBS=OFF"
+                "-DBUILD_GMOCK=OFF")
+        # on some systems we need link explicitly against threads
+        if (TARGET ext-gtest-ghex)
+            find_package (Threads)
+            target_link_libraries(ext-gtest-ghex INTERFACE Threads::Threads)
+        endif()
+    else()
+        # Use system provided google test
+        find_package(GTest REQUIRED)
+        add_library(ext-gtest-ghex INTERFACE)
+        if (${CMAKE_VERSION} VERSION_LESS "3.20.0")
+            target_link_libraries(ext-gtest-ghex INTERFACE GTest::GTest GTest::Main)
+        else()
+            target_link_libraries(ext-gtest-ghex INTERFACE GTest::gtest GTest::gtest_main)
+        endif()
+    endif()
 endif()

@@ -1,4 +1,11 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.21)
+
+if (NOT ${CMAKE_VERSION} VERSION_LESS 3.27)
+    # new in 3.27: additionally use uppercase <PACKAGENAME>_ROOT
+    # environment and CMake variables for find_package
+    cmake_policy(SET CMP0144 NEW)
+    set(CMAKE_POLICY_DEFAULT_CMP0144 NEW)
+endif()
 
 set(GHEX_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${GHEX_MODULE_PATH}")
@@ -29,11 +36,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # ---------------------------------------------------------------------
-# Define main library
-# ---------------------------------------------------------------------
-include(ghex_common)
-
-# ---------------------------------------------------------------------
 # GHEX options
 # ---------------------------------------------------------------------
 option(GHEX_GIT_SUBMODULE "Check submodules during build" OFF)
@@ -47,6 +49,19 @@ set(GHEX_ENABLE_ATLAS_BINDINGS OFF CACHE BOOL "Set to true to build with Atlas b
 set(GHEX_BUILD_FORTRAN OFF CACHE BOOL "True if FORTRAN bindings shall be built")
 set(GHEX_BUILD_PYTHON_BINDINGS OFF CACHE BOOL "Set to true to build Python bindings")
 set(GHEX_WITH_TESTING OFF CACHE BOOL "True if tests shall be built")
+
+# ---------------------------------------------------------------------
+# Common includes
+# ---------------------------------------------------------------------
+include(ghex_device)
+include(ghex_compile_options)
+include(ghex_copy_files)
+include(ghex_reg_test)
+
+# ---------------------------------------------------------------------
+# Define main library
+# ---------------------------------------------------------------------
+include(ghex_common)
 
 # ---------------------------------------------------------------------
 # Dependencies

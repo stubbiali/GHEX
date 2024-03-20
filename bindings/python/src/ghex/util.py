@@ -8,14 +8,20 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 from __future__ import annotations
+from enum import Enum
 import inspect
 from typing import TYPE_CHECKING
 
-import _pyghex
+import ghex.pyghex as _pyghex
 
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike
     from typing import Any, Union
+
+
+class Architecture(Enum):
+    CPU = "cpu"
+    GPU = "gpu"
 
 
 def unwrap(arg: Any) -> Any:
@@ -35,10 +41,10 @@ def cls_from_cpp_type_spec(cpp_type_spec: Union[str, tuple[str, ...]]) -> Any:
     else:
         fq_cpp_type_name, *template_args = cpp_type_spec
         template_args = [
-            targ if not isinstance(targ, int) else f"std::integral_constant<int, {targ}> "
+            targ if not isinstance(targ, int) else f"std__integral_constant_int_{targ}_"
             for targ in template_args
         ]
-        fq_cpp_type_specialization_name = fq_cpp_type_name + "<" + ", ".join(template_args) + ">"
+        fq_cpp_type_specialization_name = fq_cpp_type_name + "_" + "_".join(template_args) + "_"
 
         return getattr(_pyghex, fq_cpp_type_specialization_name)
 
@@ -46,7 +52,9 @@ def cls_from_cpp_type_spec(cpp_type_spec: Union[str, tuple[str, ...]]) -> Any:
 class CppWrapper:
     __wrapped__ = None
 
-    def __init__(self, cpp_type_spec: Union[str, tuple[str, ...]], *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self, cpp_type_spec: Union[str, tuple[str, ...]], *args: Any, **kwargs: Any
+    ) -> None:
         wrapped_cls = cls_from_cpp_type_spec(cpp_type_spec)
 
         self.__wrapped__ = wrapped_cls(

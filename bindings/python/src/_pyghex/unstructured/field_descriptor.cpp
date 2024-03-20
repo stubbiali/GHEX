@@ -10,16 +10,13 @@
 #include <vector>
 #include <sstream>
 
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-
 #include <gridtools/common/for_each.hpp>
 
 #include <ghex/buffer_info.hpp>
 #include <ghex/unstructured/grid.hpp>
 #include <ghex/unstructured/pattern.hpp>
 
-#include <util/demangle.hpp>
+#include <register_class.hpp>
 #include <unstructured/field_descriptor.hpp>
 
 namespace pyghex
@@ -49,7 +46,11 @@ struct buffer_info_accessor<ghex::gpu>
     static pybind11::buffer_info get(pybind11::object& buffer)
     {
         using namespace pybind11::literals;
+#ifdef __HIP_PLATFORM_HCC__
+        pybind11::dict info = buffer.attr("__hip_array_interface__");
+#else
         pybind11::dict info = buffer.attr("__cuda_array_interface__");
+#endif
 
         [[maybe_unused]] bool readonly = info["data"].cast<pybind11::tuple>()[1].cast<bool>();
         assert(!readonly);
@@ -83,12 +84,13 @@ struct buffer_info_accessor<ghex::gpu>
             assert(pybind11::ssize_t(strides.size()) == ndim);
         }
 
-        return pybind11::buffer_info(ptr, /* Pointer to buffer */
-            itemsize,                     /* Size of one scalar */
-            format,                       /* Python struct-style format descriptor */
-            ndim,                         /* Number of dimensions */
-            shape,                        /* Buffer dimensions */
-            strides                       /* Strides (in bytes) for each index */
+        return pybind11::buffer_info(
+            ptr,        /* Pointer to buffer */
+            itemsize,   /* Size of one scalar */
+            format,     /* Python struct-style format descriptor */
+            ndim,       /* Number of dimensions */
+            shape,      /* Buffer dimensions */
+            strides     /* Strides (in bytes) for each index */
         );
     }
 };
@@ -120,47 +122,64 @@ register_field_descriptor(pybind11::module& m)
             using pattern_type = ghex::pattern<grid_type, domain_id_type>;
             using buffer_info_type = ghex::buffer_info<pattern_type, arch_type, type>;
 
-            auto type_name = util::demangle<type>();
-            pybind11::class_<type>(m, type_name.c_str())
+            auto _field_descriptor = register_class<type>(m);
+            /*auto _buffer_info = */register_class<buffer_info_type>(m);
+
+            _field_descriptor
                 .def(pybind11::init(
-                         [](const domain_descriptor_type& dom, pybind11::object& b)
-                         {
-                             pybind11::buffer_info info = get_buffer_info<arch_type>(b);
+                    [](const domain_descriptor_type& dom, pybind11::object& b)
+                    {
+                        pybind11::buffer_info info = get_buffer_info<arch_type>(b);
 
-                             if (info.format != pybind11::format_descriptor<T>::format())
-                             {
-                                 std::stringstream error;
-                                 error << "Incompatible format: expected a " << typeid(T).name()
-                                       << " buffer.";
-                                 throw pybind11::type_error(error.str());
-                             }
-                             if (info.ndim > 2u)
-                             {
-                                 throw pybind11::type_error("field has too many dimensions");
-                             }
-                             if (static_cast<std::size_t>(info.shape[0]) != dom.size())
-                             {
-                                 throw pybind11::type_error(
-                                     "field's first dimension must match the size of the domain");
-                             }
-                             if (info.ndim == 2 && info.strides[1] != sizeof(T))
-                             {
-                                 throw pybind11::type_error(
-                                     "field's levels must be contiguous in memory");
-                             }
-                             std::size_t levels =
-                                 (info.ndim == 1) ? 1u : (std::size_t)info.shape[1];
+                        if (info.format != pybind11::format_descriptor<T>::format())
+                        {
+                            std::stringstream error;
+                            error << "Incompatible format: expected a " << typeid(T).name()
+                                  << " buffer.";
+                            throw pybind11::type_error(error.str());
+                        }
 
-                             return type{dom, static_cast<T*>(info.ptr), levels};
-                         }),
-                    pybind11::keep_alive<0, 2>())
-                .def_property_readonly_static("__cpp_type__",
-                    [type_name](const pybind11::object&) { return type_name; });
+                        if (info.ndim > 2u)
+                        {
+                            throw pybind11::type_error("field has too many dimensions");
+                        }
 
-            auto buffer_info_name = util::demangle<buffer_info_type>();
-            pybind11::class_<buffer_info_type>(m, buffer_info_name.c_str())
-                .def_property_readonly_static("__cpp_type__",
-                    [buffer_info_name](const pybind11::object&) { return buffer_info_name; });
+                        if (static_cast<std::size_t>(info.shape[0]) != dom.size())
+                        {
+                            throw pybind11::type_error(
+                                "field's first dimension must match the size of the domain");
+                        }
+
+                        bool levels_first = true;
+                        std::size_t outer_strides = 0u;
+                        if (info.ndim == 2 && info.strides[1] != sizeof(T))
+                        {
+                            levels_first = false;
+                            if (info.strides[0] != sizeof(T))
+                                throw pybind11::type_error("field's strides are not compatible with GHEX");
+                            outer_strides = info.strides[1] / sizeof(T);
+                            if (outer_strides*sizeof(T) != (std::size_t)(info.strides[1]))
+                                throw pybind11::type_error("field's strides are not compatible with GHEX");
+                        }
+                        else if (info.ndim == 2)
+                        {
+                            if (info.strides[1] != sizeof(T))
+                                throw pybind11::type_error("field's strides are not compatible with GHEX");
+                            outer_strides = info.strides[0] / sizeof(T);
+                            if (outer_strides*sizeof(T) != (std::size_t)(info.strides[0]))
+                                throw pybind11::type_error("field's strides are not compatible with GHEX");
+                        }
+                        else
+                        {
+                            if (info.strides[0] != sizeof(T))
+                                throw pybind11::type_error("field's strides are not compatible with GHEX");
+                        }
+                        std::size_t levels =
+                            (info.ndim == 1) ? 1u : (std::size_t)info.shape[1];
+
+                        return type{dom, static_cast<T*>(info.ptr), levels, levels_first};
+                }),
+                pybind11::keep_alive<0, 2>());
         });
 }
 

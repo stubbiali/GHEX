@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # ghex-org
 #
@@ -11,11 +10,12 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-import _pyghex
+from ghex import mpi_comm
+from ghex.pyghex import context
 
 if TYPE_CHECKING:
     from mpi4py.MPI import Comm
 
 
-def make_context(mpi_comm: Comm, thread_safe: bool = False) -> _pyghex.context:
-    return _pyghex.context(_pyghex.mpi_comm(mpi_comm), thread_safe)
+def make_context(comm: Comm, thread_safe: bool = False) -> context:
+    return context(mpi_comm(comm), thread_safe)

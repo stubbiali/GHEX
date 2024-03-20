@@ -1,5 +1,3 @@
-include(ghex_copy_files)
-include(ghex_device)
 
 set(pyghex_source
     config.cpp
@@ -33,21 +31,7 @@ link_device_runtime(pyghex_obj)
 target_link_libraries(pyghex_obj PUBLIC ghex_common)
 
 # Add GPU support
-if (GHEX_USE_GPU)
-    if (ghex_gpu_mode STREQUAL "cuda")
-        set_source_files_properties(${pyghex_source} PROPERTIES LANGUAGE CUDA)
-        if (${CMAKE_VERSION} VERSION_LESS "3.24.0" OR GHEX_GPU_ARCH)
-            set_target_properties(pyghex_obj PROPERTIES CUDA_ARCHITECTURES ${GHEX_GPU_ARCH})
-        else()
-            set_target_properties(pyghex_obj PROPERTIES CUDA_ARCHITECTURES native)
-        endif()
-    elseif (ghex_gpu_mode STREQUAL "hip")
-        find_package(hip REQUIRED)
-        target_link_libraries(pyghex_obj PRIVATE hip::device)
-        # note(stubbiali): the following workaround for clang-hip seems to be superfluous
-        # target_compile_options(pyghex_obj PRIVATE $<BUILD_INTERFACE:-std=c++14>)
-    endif()
-endif()
+compile_as_cuda(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} SOURCES ${pyghex_source})
 
 # Add support for mpi4py if available.
 find_python_module(mpi4py)
@@ -66,27 +50,32 @@ add_library(pyghex MODULE $<TARGET_OBJECTS:pyghex_obj>)
 set_target_properties(pyghex PROPERTIES
     OUTPUT_NAME _pyghex
     PREFIX "${PYTHON_MODULE_PREFIX}"
-    SUFFIX "${PYTHON_MODULE_EXTENSION}")
+    SUFFIX "${PYTHON_MODULE_EXTENSION}"
+    # Choose this particular output directory for testing purposes
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../../ghex")
 # This dependency has to be spelt out again, despite being added to
 # pyghex_obj because CMake.
 target_link_libraries(pyghex PRIVATE pybind11::module)
 target_link_libraries(pyghex PRIVATE ghex)
 ghex_link_to_oomph(ghex)
 
-# Set RPATH
-set(ghex_python_install_libdir "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-set_target_properties(ghex PROPERTIES INSTALL_RPATH ${ghex_python_install_libdir})
-if (GHEX_TRANSPORT_BACKEND STREQUAL "LIBFABRIC")
-    set_target_properties(oomph_libfabric PROPERTIES INSTALL_RPATH ${ghex_python_install_libdir})
-elseif (GHEX_TRANSPORT_BACKEND STREQUAL "UCX")
-    set_target_properties(oomph_ucx PROPERTIES INSTALL_RPATH ${ghex_python_install_libdir})
+# Set RPaths such that the python module is able to find libghex
+if (SKBUILD_PROJECT_NAME)
+    list(GET CMAKE_PREFIX_PATH 0 scikit_build_core_install_path)
+    set(ghex_rpath ${scikit_build_core_install_path}/ghex/${CMAKE_INSTALL_LIBDIR})
+
+    set_target_properties(pyghex PROPERTIES INSTALL_RPATH "${ghex_rpath}")
+    install(TARGETS pyghex DESTINATION .)
+
+    set_target_properties(ghex PROPERTIES INSTALL_RPATH "${ghex_rpath}")
+    if (GHEX_TRANSPORT_BACKEND STREQUAL "LIBFABRIC")
+        set_target_properties(oomph_libfabric PROPERTIES INSTALL_RPATH "${ghex_rpath}")
+    elseif (GHEX_TRANSPORT_BACKEND STREQUAL "UCX")
+        set_target_properties(oomph_ucx PROPERTIES INSTALL_RPATH "${ghex_rpath}")
+    else()
+        set_target_properties(oomph_mpi PROPERTIES INSTALL_RPATH "${ghex_rpath}")
+    endif()
 else()
-    set_target_properties(oomph_mpi PROPERTIES INSTALL_RPATH ${ghex_python_install_libdir})
-endif()
-set_target_properties(pyghex PROPERTIES INSTALL_RPATH ${ghex_python_install_libdir})
-
-install(TARGETS pyghex DESTINATION .)
-
-if(GHEX_WITH_TESTING)
-    install(TARGETS pyghex DESTINATION ${venv_site_packages_dir})
+    set_target_properties(pyghex PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+    install(TARGETS pyghex DESTINATION ${GHEX_PYTHON_LIB_PATH}/ghex)
 endif()
