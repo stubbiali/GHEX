@@ -9,7 +9,7 @@ set(fortran_lang_gnu "$<COMPILE_LANG_AND_ID:Fortran,GNU>")
 function(ghex_target_compile_options target)
     target_compile_options(${target} PRIVATE
     # flags for CXX builds
-    $<${c_cxx_lang}:$<BUILD_INTERFACE:-Wall -Wextra -Wpedantic -Wno-unknown-pragmas>>
+    $<${c_cxx_lang}:$<BUILD_INTERFACE:-Wall -Wextra -Wpedantic>>
     $<${c_cxx_lang_clang}:$<BUILD_INTERFACE:-Wno-unused-lambda-capture>>
     # flags for CUDA builds
     $<${cuda_lang}:$<BUILD_INTERFACE:-Xcompiler=-Wall -Wextra --default-stream per-thread>>
