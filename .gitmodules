@@ -8,5 +8,5 @@
     branch = v1.14.0
 [submodule "ext/oomph"]
     path = ext/oomph
-    url = https://github.com/ghex-org/oomph.git
-    branch = main
+    url = https://github.com/stubbiali/oomph.git
+    branch = fix-hwmalloc
