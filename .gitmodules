@@ -1,7 +1,7 @@
 [submodule "ext/gridtools"]
     path = ext/gridtools
-    url = https://github.com/GridTools/gridtools.git
-    tag = v2.3.9
+    url = https://github.com/stubbiali/gridtools.git
+    tag = identify-crayclang-as-clang
 [submodule "ext/googletest"]
     path = ext/googletest
     url = https://github.com/google/googletest.git
