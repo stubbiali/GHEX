@@ -9,8 +9,8 @@
 #
 from __future__ import annotations
 
+import abc
 import functools
-from functools import cached_property
 import itertools
 import math
 import operator
@@ -70,18 +70,18 @@ class UnitRange(IntegerSet):
             self.start = 0
             self.stop = 0
 
-    @cached_property
+    @functools.cached_property
     def size(self) -> int:
         """Return the number of elements."""
         assert self.start <= self.stop
         return self.stop - self.start
 
-    @cached_property
+    @functools.cached_property
     def empty(self) -> bool:
         """Return if the range is empty"""
         return self.start >= self.stop
 
-    @cached_property
+    @functools.cached_property
     def bounds(self) -> UnitRange:
         """Smallest range containing all elements. In this case itelf."""
         return self
@@ -136,7 +136,7 @@ class UnitRange(IntegerSet):
     def __str__(self) -> str:
         return f"UnitRange({self.start}, {self.stop})"
 
-    def __mul__(self, other: UnitRange) -> Union[ProductSet, UnionRange]:
+    def __mul__(self, other: Set) -> Union[ProductSet, UnionCartesian, UnionRange]:
         """Cartesian product of `self` with `other`"""
         if isinstance(other, ProductSet):
             return ProductSet(self, *other.args)
@@ -215,6 +215,9 @@ class UnitRange(IntegerSet):
     def __repr__(self) -> str:
         return f"UnitRange({self.start}, {self.stop})"
 
+    def simplify(self) -> UnitRange:
+        return self
+
 
 def union(*args: Set, simplify: bool = True, disjoint: bool = False) -> UnionMixin:
     assert len(args) > 0
@@ -262,7 +265,7 @@ class UnionMixin(typing.Generic[PT]):
         self.args = args
         self.disjoint = disjoint
 
-    @cached_property
+    @functools.cached_property
     def size(self) -> int:
         overlap = 0
         if not self.disjoint:
@@ -272,7 +275,7 @@ class UnionMixin(typing.Generic[PT]):
 
         return functools.reduce(operator.add, (arg.size for arg in self.args)) - overlap
 
-    @cached_property
+    @functools.cached_property
     def empty(self) -> bool:
         return all(arg.empty for arg in self.args)
 
@@ -311,8 +314,7 @@ class UnionMixin(typing.Generic[PT]):
             return self
 
         args = list(self.args)
-        for i in range(len(args)):
-            arg1 = args[i]
+        for i, arg1 in enumerate(args):
             for j in range(i + 1, len(args)):
                 args[j] = args[j].without(arg1, simplify=False)
 
@@ -349,7 +351,7 @@ class UnionRange(IntegerSet, UnionMixin[UnitRange]):
     def __init__(self, *args, **kwargs):
         UnionMixin.__init__(self, *args, **kwargs)
 
-    @cached_property
+    @functools.cached_property
     def bounds(self) -> UnitRange:
         """Smallest UnitRange containing all elements"""
         return UnitRange(
@@ -370,7 +372,7 @@ class UnionRange(IntegerSet, UnionMixin[UnitRange]):
 
         return union(*fused_args, simplify=False, disjoint=self.disjoint)
 
-    def __mul__(self, other) -> UnionCartesian:
+    def __mul__(self, other: Set) -> UnionCartesian:
         # todo: may user facing interface should simplify
         return union(*(arg * other for arg in self.args), disjoint=self.disjoint, simplify=False)
 
@@ -414,11 +416,8 @@ class CartesianSet(Set):
     def primitive_type() -> type[ProductSet]:
         return ProductSet
 
-    def simplify(self) -> CartesianSet:
-        return self
-
-    def elements(self) -> Sequence[ProductSet]:
-        raise NotImplementedError()
+    @abc.abstractmethod
+    def elements(self) -> Sequence[ProductSet]: ...
 
 
 class ProductSet(CartesianSet):
@@ -432,7 +431,7 @@ class ProductSet(CartesianSet):
 
         self.args = args
 
-    @cached_property
+    @functools.cached_property
     def size(self) -> int:
         return functools.reduce(operator.mul, self.shape)
 
@@ -440,17 +439,21 @@ class ProductSet(CartesianSet):
     def bounds(self) -> ProductSet:
         return self
 
-    @cached_property
+    @functools.cached_property
     def shape(self) -> tuple[int]:
         return tuple(arg.size for arg in self.args)
 
-    @cached_property
+    @functools.cached_property
     def empty(self) -> bool:
         return any(arg.empty for arg in self.args)
 
     @property
     def ndim(self) -> int:
         return len(self.args)
+
+    @property
+    def origin(self) -> tuple[int, ...]:
+        return tuple(arg.start for arg in self.args)
 
     def without(
         self, *others: ProductSet | UnionCartesian, simplify: bool = True
@@ -517,6 +520,9 @@ class ProductSet(CartesianSet):
         assert len(self.args) == len(args)
         return ProductSet(*(r.translate(arg) for r, arg in zip(self.args, args)))
 
+    def project(self, *axis: int) -> ProductSet:
+        return ProductSet(*(self.args[ax] for ax in axis))
+
     def as_tuple(self) -> tuple[tuple[int, int]]:
         return tuple(arg.as_tuple() for arg in self.args)
 
@@ -541,7 +547,7 @@ class ProductSet(CartesianSet):
 
         return all(i in r for r, i in zip(self.args, arg))
 
-    def issubset(self, arg: Set):
+    def issubset(self, arg: Set) -> bool:
         # if isinstance(arg, ProductSet):
         #    assert len(arg.args) == len(self.args)
         #    return all(subr.issubset(r) for subr, r in zip(self.args, arg.args))
@@ -576,6 +582,9 @@ class ProductSet(CartesianSet):
     def elements(self) -> Sequence[ProductSet]:
         return [self]
 
+    def simplify(self) -> ProductSet:
+        return self
+
 
 class UnionCartesian(CartesianSet, UnionMixin[ProductSet]):
     """(Set)union of a set of cartesian sets"""
@@ -583,7 +592,7 @@ class UnionCartesian(CartesianSet, UnionMixin[ProductSet]):
     def __init__(self, *args, **kwargs) -> None:
         UnionMixin.__init__(self, *args, **kwargs)
 
-    @cached_property
+    @functools.cached_property
     def bounds(self) -> Set:
         return ProductSet(
             *(
@@ -592,7 +601,7 @@ class UnionCartesian(CartesianSet, UnionMixin[ProductSet]):
             )
         )
 
-    @cached_property
+    @functools.cached_property
     def ndim(self) -> int:
         assert all(arg.ndim == self.args[0].ndim for arg in self.args)
 
@@ -680,15 +689,10 @@ class IndexSpace:
 
     def intersect(self, mask: ProductSet) -> IndexSpace:
         """Get a new :class:`IndexSpace` by masking all subsets."""
-        if self.ndim == 1:
-            m = ProductSet(mask.args[2])
-        elif self.ndim == 2:
-            m = mask.args[0] * mask.args[1]
-        else:
-            m = mask
-        return self.transform(lambda subset: subset.intersect(m))
+        assert mask.ndim == self.ndim
+        return self.transform(lambda subset: subset.intersect(mask))
 
-    @cached_property
+    @functools.cached_property
     def ndim(self):
         return self.covering.ndim
 
@@ -702,25 +706,25 @@ class IndexSpace:
         )
         return self.ndim
 
-    @cached_property
+    @functools.cached_property
     def bounds(self) -> ProductSet:
         return self.covering.bounds
 
-    @cached_property
+    @functools.cached_property
     def covering(self) -> CartesianSet:
         return union(*(subset for subset in self.subset.values()), simplify=False)
 
-    @cached_property
+    @functools.cached_property
     def default_origin(self) -> tuple[int, ...]:
         """A tuple of the lowest indices in each dimension"""
         return tuple(bound.start for bound in self.subset["definition"].bounds.args)
 
-    @cached_property
+    @functools.cached_property
     def shape(self) -> tuple[int, ...]:
         """The maximum size of each dimensions"""
         return tuple(bound.size for bound in self.bounds.args)
 
-    @cached_property
+    @functools.cached_property
     def empty(self) -> bool:
         pruned_index_space = self.prune()
         return len(pruned_index_space.subset) == 1 and pruned_index_space.subset["definition"].empty
