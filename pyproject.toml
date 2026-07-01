@@ -88,6 +88,12 @@ warn_redundant_casts = true
 warn_unused_configs = true
 warn_unused_ignores = true
 
+[tool.uv]
+cache-keys = [
+	{file = 'pyproject.toml'},
+	{env = 'GHEX_TRANSPORT_BACKEND'},
+]
+
 # Pip installation:
 ###################
 
