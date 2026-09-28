@@ -14,7 +14,7 @@ include(ghex_version)
 # note: version should not be changed manually, use bump-my-version instead:
 # install: pip install bump-my-version
 # example: bump-my-version bump patch
-make_version(GHEX 0 5 1)
+make_version(GHEX 0 9 0)
 
 project(GHEX VERSION ${GHEX_VERSION} LANGUAGES C CXX)
 
@@ -172,6 +172,8 @@ if(GHEX_USE_BUNDLED_OOMPH)
         set_target_properties(oomph_libfabric PROPERTIES INSTALL_RPATH "${rpath_origin}")
     elseif (GHEX_TRANSPORT_BACKEND STREQUAL "UCX")
         set_target_properties(oomph_ucx PROPERTIES INSTALL_RPATH "${rpath_origin}")
+    elseif (GHEX_TRANSPORT_BACKEND STREQUAL "NCCL")
+        set_target_properties(oomph_nccl PROPERTIES INSTALL_RPATH "${rpath_origin}")
     else()
         set_target_properties(oomph_mpi PROPERTIES INSTALL_RPATH "${rpath_origin}")
     endif()

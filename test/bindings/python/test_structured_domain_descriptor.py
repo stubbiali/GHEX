@@ -9,7 +9,6 @@
 #
 import pytest
 
-from ghex.context import make_context
 from ghex.structured.cartesian_sets import IndexSpace, UnitRange
 from ghex.structured.regular import DomainDescriptor, HaloGenerator
 
@@ -29,8 +28,8 @@ haloss = [
 
 
 @pytest.mark.mpi
-def test_domain_descriptor(capsys, mpi_cart_comm):
-    ctx = make_context(mpi_cart_comm, True)
+def test_domain_descriptor(capsys, mpi_cart_comm, cart_context):
+    ctx = cart_context
 
     coords = mpi_cart_comm.Get_coords(mpi_cart_comm.Get_rank())
     coords2 = mpi_cart_comm.Get_coords(ctx.rank())
@@ -61,17 +60,15 @@ def test_halo_gen_construction(capsys, mpi_cart_comm, halos):
         print(halos)
     dims = mpi_cart_comm.dims
     glob_domain_indices = (
-        UnitRange(0, dims[0] * Nx)
-        * UnitRange(0, dims[1] * Ny)
-        * UnitRange(0, dims[2] * Nz)
+        UnitRange(0, dims[0] * Nx) * UnitRange(0, dims[1] * Ny) * UnitRange(0, dims[2] * Nz)
     )
     halo_gen = HaloGenerator(glob_domain_indices, halos, (False, False, False))
 
 
 @pytest.mark.parametrize("halos", haloss)
 @pytest.mark.mpi
-def test_halo_gen_call(mpi_cart_comm, halos):
-    ctx = make_context(mpi_cart_comm, True)
+def test_halo_gen_call(mpi_cart_comm, cart_context, halos):
+    ctx = cart_context
 
     periodicity = (False, False, False)
     p_coord = tuple(mpi_cart_comm.Get_coords(mpi_cart_comm.Get_rank()))
@@ -79,9 +76,13 @@ def test_halo_gen_call(mpi_cart_comm, halos):
     # setup grid
     global_grid = IndexSpace.from_sizes(Nx, Ny, Nz)
     sub_grids = global_grid.decompose(mpi_cart_comm.dims)
-    sub_grid = sub_grids[p_coord]  # sub-grid in global coordinates
-    owned_indices = sub_grid.subset["definition"]
-    sub_grid.add_subset("halo", owned_indices.extend(*halos).without(owned_indices))
+    owned_indices = sub_grids[p_coord].subset["definition"]  # sub-grid in global coordinates
+    sub_grid = IndexSpace(
+        {
+            "definition": owned_indices,
+            "halo": owned_indices.extend(*halos).without(owned_indices),
+        }
+    )
 
     # construct halo_generator
     halo_gen = HaloGenerator(global_grid.subset["definition"], halos, periodicity)
@@ -96,17 +97,21 @@ def test_halo_gen_call(mpi_cart_comm, halos):
 
 @pytest.mark.parametrize("halos", haloss)
 @pytest.mark.mpi
-def test_domain_descriptor_grid(mpi_cart_comm, halos):
-    ctx = make_context(mpi_cart_comm, True)
+def test_domain_descriptor_grid(mpi_cart_comm, cart_context, halos):
+    ctx = cart_context
 
     p_coord = tuple(mpi_cart_comm.Get_coords(mpi_cart_comm.Get_rank()))
 
     # setup grid
     global_grid = IndexSpace.from_sizes(Nx, Ny, Nz)
     sub_grids = global_grid.decompose(mpi_cart_comm.dims)
-    sub_grid = sub_grids[p_coord]  # sub-grid in global coordinates
-    owned_indices = sub_grid.subset["definition"]
-    sub_grid.add_subset("halo", owned_indices.extend(*halos).without(owned_indices))
+    owned_indices = sub_grids[p_coord].subset["definition"]  # sub-grid in global coordinates
+    sub_grid = IndexSpace(
+        {
+            "definition": owned_indices,
+            "halo": owned_indices.extend(*halos).without(owned_indices),
+        }
+    )
 
     domain_desc = DomainDescriptor(ctx.rank(), owned_indices)
 
